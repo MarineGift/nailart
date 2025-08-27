@@ -524,8 +524,12 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
   const canProceedFromStep4 = true // Always allow proceeding from booking confirmation
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
-      <div className="max-w-6xl mx-auto -mt-0">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #FCE7F3, #F3E8FF, #E0E7FF)',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }} className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
+      <div style={{ maxWidth: '1152px', margin: '0 auto', marginTop: 0 }} className="max-w-6xl mx-auto -mt-0">
         {onBack && (
           <div className="absolute top-4 left-4 z-20">
             <button
@@ -537,23 +541,53 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
           </div>
         )}
         {/* Hero Carousel Header */}
-        <div className="relative overflow-hidden shadow-2xl -mt-0">
-          <div className="h-96 bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200 relative">
-            <div className="absolute inset-0">
+        <div style={{ position: 'relative', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)', marginTop: 0 }} className="relative overflow-hidden shadow-2xl -mt-0">
+          <div style={{
+            height: '384px',
+            background: 'linear-gradient(135deg, #F8BBD9, #D8B4FE, #A5B4FC)',
+            position: 'relative'
+          }} className="h-96 bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200 relative">
+            <div style={{ position: 'absolute', inset: 0 }} className="absolute inset-0">
               <div 
-                className="absolute inset-0 bg-cover bg-center opacity-40"
                 style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  opacity: 0.4,
                   backgroundImage: 'url(https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1200&h=400&fit=crop)'
                 }}
+                className="absolute inset-0 bg-cover bg-center opacity-40"
               ></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-300/30 via-purple-300/30 to-indigo-300/30"></div>
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(248, 187, 217, 0.3), rgba(216, 180, 254, 0.3), rgba(165, 180, 252, 0.3))' }} className="absolute inset-0 bg-gradient-to-r from-pink-300/30 via-purple-300/30 to-indigo-300/30"></div>
             </div>
-            <div className="relative z-10 flex items-center justify-center h-full text-center px-8">
+            <div style={{
+              position: 'relative',
+              zIndex: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              textAlign: 'center',
+              padding: '0 32px'
+            }} className="relative z-10 flex items-center justify-center h-full text-center px-8">
               <div>
-                <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
-                  Book Your Appointment
+                <h1 style={{
+                  fontSize: '48px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  marginBottom: '16px',
+                  textShadow: '0 10px 15px rgba(0, 0, 0, 0.3)'
+                }} className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                  💅 Book Your Appointment
                 </h1>
-                <p className="text-xl text-white/90 drop-shadow-md max-w-2xl mx-auto">
+                <p style={{
+                  fontSize: '20px',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  textShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  maxWidth: '672px',
+                  margin: '0 auto'
+                }} className="text-xl text-white/90 drop-shadow-md max-w-2xl mx-auto">
                   Experience luxury nail care with our expert technicians
                 </p>
                 <div className="mt-6 flex justify-center space-x-4">
@@ -573,8 +607,8 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
         </div>
 
         {/* Step Indicator */}
-        <div className="flex justify-center mb-8 mt-12">
-          <div className="flex space-x-4">
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px', marginTop: '48px' }} className="flex justify-center mb-8 mt-12">
+          <div style={{ display: 'flex', gap: '16px' }} className="flex space-x-4">
             {[
               { step: 1, title: 'Date & Time', icon: CalendarDays },
               { step: 2, title: 'Service', icon: Clock },
@@ -584,6 +618,20 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
             ].map(({ step, title, icon: Icon }) => (
               <div
                 key={step}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  borderRadius: '25px',
+                  transition: 'all 0.3s ease',
+                  background: currentStep >= step 
+                    ? 'linear-gradient(135deg, #FCE7F3, #F3E8FF)' 
+                    : '#F9FAFB',
+                  color: currentStep >= step ? '#7C3AED' : '#6B7280',
+                  boxShadow: currentStep >= step ? '0 4px 15px rgba(216, 180, 254, 0.3)' : 'none',
+                  border: currentStep >= step ? '2px solid #F8BBD9' : '2px solid #E5E7EB'
+                }}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-300 ${
                   currentStep >= step 
                     ? 'bg-gradient-to-r from-pink-100 to-purple-100 text-purple-700 shadow-md border-2 border-pink-200' 
