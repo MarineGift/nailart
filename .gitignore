@@ -1,0 +1,1 @@
+node_modules/\n.next/\n.cache/\ndist/\nbuild/\n*.log\n.env.local\n.DS_Store

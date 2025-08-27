@@ -1,0 +1,45 @@
+[05:10:26.693] Running build in Washington, D.C., USA (East) – iad1
+[05:10:26.694] Build machine configuration: 2 cores, 8 GB
+[05:10:26.709] Cloning github.com/MarineGift/nailart (Branch: nailart, Commit: fb3dd1b)
+[05:10:26.847] Previous build caches not available
+[05:10:27.022] Cloning completed: 312.000ms
+[05:10:27.338] Running "vercel build"
+[05:10:27.762] Vercel CLI 46.0.3
+[05:10:28.137] Installing dependencies...
+[05:10:34.711] npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+[05:10:34.814] npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+[05:10:48.396] 
+[05:10:48.396] added 666 packages in 20s
+[05:10:48.397] 
+[05:10:48.397] 172 packages are looking for funding
+[05:10:48.400]   run `npm fund` for details
+[05:10:48.472] Detected Next.js version: 15.4.6
+[05:10:48.481] Running "npm run build"
+[05:10:48.598] 
+[05:10:48.599] > connienail-salon@1.0.0 build
+[05:10:48.599] > next build
+[05:10:48.599] 
+[05:10:49.277] Attention: Next.js now collects completely anonymous telemetry regarding usage.
+[05:10:49.278] This information is used to shape Next.js' roadmap and prioritize features.
+[05:10:49.279] You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+[05:10:49.279] https://nextjs.org/telemetry
+[05:10:49.279] 
+[05:10:49.345]    ▲ Next.js 15.4.6
+[05:10:49.346] 
+[05:10:49.428]    Creating an optimized production build ...
+[05:11:27.043]  ✓ Compiled successfully in 34.0s
+[05:11:27.049]    Skipping validation of types
+[05:11:27.050]    Skipping linting
+[05:11:27.331]    Collecting page data ...
+[05:11:27.850] Supabase client initialized with service key
+[05:11:28.216] Error: Twilio environment variables are required: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
+[05:11:28.216]     at 31403 (.next/server/app/api/send-sms/route.js:4:188062)
+[05:11:28.217]     at c (.next/server/webpack-runtime.js:1:128)
+[05:11:28.217]     at <unknown> (.next/server/app/api/send-sms/route.js:23:824100)
+[05:11:28.217]     at c.X (.next/server/webpack-runtime.js:1:2125)
+[05:11:28.217]     at <unknown> (.next/server/app/api/send-sms/route.js:23:824061)
+[05:11:28.217]     at Object.<anonymous> (.next/server/app/api/send-sms/route.js:23:824132)
+[05:11:28.223] 
+[05:11:28.223] > Build error occurred
+[05:11:28.226] [Error: Failed to collect page data for /api/send-sms] { type: 'Error' }
+[05:11:28.252] Error: Command "npm run build" exited with 1
