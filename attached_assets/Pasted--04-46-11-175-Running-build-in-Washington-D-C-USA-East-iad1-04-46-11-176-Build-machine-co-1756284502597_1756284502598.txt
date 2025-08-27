@@ -1,0 +1,50 @@
+[04:46:11.175] Running build in Washington, D.C., USA (East) – iad1
+[04:46:11.176] Build machine configuration: 2 cores, 8 GB
+[04:46:11.191] Cloning github.com/MarineGift/nailart (Branch: nailart, Commit: fb3dd1b)
+[04:46:11.349] Previous build caches not available
+[04:46:11.519] Cloning completed: 327.000ms
+[04:46:11.884] Running "vercel build"
+[04:46:12.296] Vercel CLI 46.0.3
+[04:46:12.664] Installing dependencies...
+[04:46:19.093] npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+[04:46:19.183] npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+[04:46:31.595] 
+[04:46:31.595] added 666 packages in 19s
+[04:46:31.596] 
+[04:46:31.597] 172 packages are looking for funding
+[04:46:31.597]   run `npm fund` for details
+[04:46:31.666] Detected Next.js version: 15.4.6
+[04:46:31.674] Running "npm run build"
+[04:46:31.797] 
+[04:46:31.798] > connienail-salon@1.0.0 build
+[04:46:31.798] > next build
+[04:46:31.798] 
+[04:46:32.388] Attention: Next.js now collects completely anonymous telemetry regarding usage.
+[04:46:32.389] This information is used to shape Next.js' roadmap and prioritize features.
+[04:46:32.390] You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+[04:46:32.390] https://nextjs.org/telemetry
+[04:46:32.391] 
+[04:46:32.451]    ▲ Next.js 15.4.6
+[04:46:32.452] 
+[04:46:32.529]    Creating an optimized production build ...
+[04:47:08.074]  ✓ Compiled successfully in 31.0s
+[04:47:08.080]    Skipping validation of types
+[04:47:08.080]    Skipping linting
+[04:47:08.368]    Collecting page data ...
+[04:47:08.857] Error: supabaseKey is required.
+[04:47:08.858]     at new bA (.next/server/chunks/3008.js:21:79367)
+[04:47:08.858]     at bB (.next/server/chunks/3008.js:21:84226)
+[04:47:08.858]     at 41506 (.next/server/app/api/adjust-staff/route.js:1:717)
+[04:47:08.858]     at c (.next/server/webpack-runtime.js:1:128)
+[04:47:08.858]     at 91530 (.next/server/app/api/adjust-staff/route.js:1:2003)
+[04:47:08.858]     at c (.next/server/webpack-runtime.js:1:128)
+[04:47:08.858]     at <unknown> (.next/server/app/api/adjust-staff/route.js:1:9080)
+[04:47:08.858]     at c.X (.next/server/webpack-runtime.js:1:2125)
+[04:47:08.858]     at <unknown> (.next/server/app/api/adjust-staff/route.js:1:9055)
+[04:47:08.858]     at Object.<anonymous> (.next/server/app/api/adjust-staff/route.js:1:9112)
+[04:47:08.861] 
+[04:47:08.861] > Build error occurred
+[04:47:08.865] [Error: Failed to collect page data for /api/adjust-staff] {
+[04:47:08.865]   type: 'Error'
+[04:47:08.865] }
+[04:47:08.888] Error: Command "npm run build" exited with 1
