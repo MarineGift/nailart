@@ -1,26 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-// Temporary inline Alert component until UI is fixed
-const Alert = ({ children, variant, ...props }: { children: React.ReactNode, variant?: 'destructive' | 'default' }) => (
-  <div className={`p-3 rounded-lg border ${variant === 'destructive' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`} {...props}>
-    {children}
-  </div>
-)
-const AlertDescription = ({ children }: { children: React.ReactNode }) => <div>{children}</div>
-import { useAuth } from '@/components/auth-provider'
 import { LogIn, User, Shield } from 'lucide-react'
 
-export function LoginPage() {
+interface LoginPageProps {
+  onLogin?: (user: { username: string, role: string }) => void
+}
+
+export function LoginPage({ onLogin }: LoginPageProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { login } = useAuth()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,7 +36,9 @@ export function LoginPage() {
       const user = users[username as keyof typeof users]
       
       if (user && user.password === password) {
-        login(user.role, user.name)
+        if (onLogin) {
+          onLogin({ username: user.name, role: user.role })
+        }
         setError('')
       } else {
         setError('Login failed. Please check your username and password.')
@@ -57,126 +50,89 @@ export function LoginPage() {
     }
   }
 
-  const quickLogin = async (role: string, username: string, name: string) => {
-    setLoading(true)
-    setError('')
-    try {
-      login(role, name)
-      setError('')
-    } catch (error) {
-      setError('An error occurred during login.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50 p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-8 h-8 text-white" />
+          </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-            ConnieNail
+            ConnieNail Login
           </h1>
-          <p className="text-gray-600 mt-2">Staff Management System</p>
+          <p className="text-gray-600 mt-2">Please sign in to continue</p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LogIn className="h-5 w-5" />
-              Login
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={handleLogin} className="space-y-4">
+        {/* Login Card */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="username">Username</Label>
-                <Input
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                  <User className="w-4 h-4 inline mr-2" />
+                  Username
+                </label>
+                <input
                   id="username"
                   type="text"
-                  placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                  placeholder="Enter your username"
                   disabled={loading}
-                  data-testid="input-username"
                 />
               </div>
+              
               <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  <Shield className="w-4 h-4 inline mr-2" />
+                  Password
+                </label>
+                <input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                  placeholder="Enter your password"
                   disabled={loading}
-                  data-testid="input-password"
                 />
               </div>
+            </div>
 
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
+            {error && (
+              <div className="p-3 rounded-lg border bg-red-50 border-red-200 text-red-800">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 flex items-center justify-center"
+            >
+              {loading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5 mr-2" />
+                  Sign In
+                </>
               )}
+            </button>
+          </form>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={loading}
-                data-testid="button-login"
-              >
-                {loading ? 'Logging in...' : 'Login'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Test Accounts
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-              onClick={() => quickLogin('admin', 'admin', 'Admin User')}
-              disabled={loading}
-              data-testid="button-admin-login"
-            >
-              <Shield className="h-4 w-4 mr-2 text-red-500" />
-              Admin Login (admin / admin123)
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-              onClick={() => quickLogin('manager', 'manager', 'Manager User')}
-              disabled={loading}
-              data-testid="button-manager-login"
-            >
-              <Shield className="h-4 w-4 mr-2 text-yellow-500" />
-              Manager Login (manager / manager123)
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-start"
-              onClick={() => quickLogin('staff', 'staff1', 'Staff Member')}
-              disabled={loading}
-              data-testid="button-staff-login"
-            >
-              <User className="h-4 w-4 mr-2 text-blue-500" />
-              Staff Login (staff1 / staff123)
-            </Button>
-          </CardContent>
-        </Card>
+          {/* Demo Credentials */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-sm text-gray-500 text-center mb-3">Demo Credentials:</p>
+            <div className="space-y-1 text-xs text-gray-400 text-center">
+              <p><strong>Admin:</strong> admin / admin123</p>
+              <p><strong>Manager:</strong> manager / manager123</p>
+              <p><strong>Staff:</strong> staff1 / staff123</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
