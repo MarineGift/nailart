@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import twilio from 'twilio'
 
-if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
-  throw new Error('Twilio environment variables are required: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER')
+// Initialize Twilio client only when needed
+function getTwilioClient() {
+  if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
+    throw new Error('Twilio environment variables are required: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER')
+  }
+  return twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
 }
-
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Twilio is configured
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
+      return NextResponse.json(
+        { error: 'SMS service is not configured. Please contact administrator.' },
+        { status: 503 }
+      )
+    }
+
     const { to, message, customerName } = await request.json()
 
     if (!to || !message) {
@@ -17,6 +27,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    const client = getTwilioClient()
 
     // Format phone number (remove any formatting and ensure it starts with +1 for US numbers)
     let formattedPhone = to.replace(/\D/g, '') // Remove all non-digits
@@ -56,7 +68,7 @@ ConnieNail Team
 
     const result = await client.messages.create({
       body: smsMessage,
-      from: process.env.TWILIO_PHONE_NUMBER,
+      from: process.env.TWILIO_PHONE_NUMBER!,
       to: formattedPhone
     })
 
