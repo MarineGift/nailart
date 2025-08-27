@@ -107,13 +107,7 @@ export default function HomePage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #E6E6FA 0%, #F8BBD9 25%, #E0BBE4 50%, #F5E6D3 75%, #E6F3FF 100%)',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
-      margin: 0,
-      padding: 0
-    }} className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-100">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-100">
       {/* Navigation handled by LayoutContent */}
 
       {/* Gallery Carousel - positioned right after the header */}
@@ -185,52 +179,24 @@ export default function HomePage() {
 
 
       {/* Services Section */}
-      <section style={{
-        padding: '64px 20px',
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 8px 32px rgba(216, 180, 254, 0.1)'
-      }} id="services" className="py-16 bg-white">
-        <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 16px', textAlign: 'center' }} className="max-w-6xl mx-auto px-4 text-center">
-          <div style={{ marginBottom: '48px' }} className="mb-12">
-            <h2 style={{
-              fontSize: '36px',
-              fontWeight: 'bold',
-              color: '#1F2937',
-              marginBottom: '16px',
-              background: 'linear-gradient(135deg, #E91E63, #9C27B0)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              color: 'transparent'
-            }} className="text-3xl font-bold text-gray-800 mb-4">
+      <section id="services" className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4 bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
               💅 Connie's Nail Premium Services
             </h2>
-            <p style={{ color: '#6B7280', fontSize: '18px' }} className="text-gray-600">
+            <p className="text-gray-600">
               From traditional nail care to innovative AI nail art, perfect beauty care experience awaits you.
             </p>
           </div>
           
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '32px'
-          }} className="grid md:grid-cols-4 gap-8">
-            <div style={{ textAlign: 'center' }} className="text-center">
-              <div style={{
-                width: '64px',
-                height: '64px',
-                background: 'linear-gradient(135deg, #FCE7F3, #F8BBD9)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px auto',
-                boxShadow: '0 4px 15px rgba(248, 187, 217, 0.3)'
-              }} className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span style={{ fontSize: '24px' }} className="text-2xl">💅</span>
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">💅</span>
               </div>
-              <h3 style={{ fontWeight: '600', marginBottom: '8px', color: '#1F2937', fontSize: '18px' }} className="font-semibold mb-2">Spa Manicure</h3>
-              <p style={{ fontSize: '14px', color: '#6B7280' }} className="text-sm text-gray-600">Perfect nail care with premium spa treatment</p>
+              <h3 className="font-semibold mb-2">Spa Manicure</h3>
+              <p className="text-sm text-gray-600">Perfect nail care with premium spa treatment</p>
             </div>
             
             <div className="text-center">
@@ -261,20 +227,9 @@ export default function HomePage() {
       </section>
 
       {/* AI Nail Art Section */}
-      <section style={{
-        padding: '64px 20px',
-        background: 'linear-gradient(135deg, #F3E8FF, #FCE7F3)',
-        position: 'relative'
-      }} className="py-16 bg-gradient-to-r from-purple-50 to-pink-50">
-        <div style={{ maxWidth: '896px', margin: '0 auto', padding: '0 16px', textAlign: 'center' }} className="max-w-4xl mx-auto px-4 text-center">
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.95)',
-            borderRadius: '16px',
-            padding: '32px',
-            boxShadow: '0 20px 40px rgba(216, 180, 254, 0.2)',
-            backdropFilter: 'blur(20px)',
-            border: '2px solid rgba(216, 180, 254, 0.3)'
-          }} className="bg-white rounded-2xl p-8 shadow-lg">
+      <section className="py-16 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="bg-white rounded-2xl p-8 shadow-lg">
             <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
               <span className="text-white text-2xl">✨</span>
             </div>
@@ -287,18 +242,7 @@ export default function HomePage() {
               treatment time and cost during your visit.
             </p>
             <Link href="/ai-nail-art">
-              <button style={{
-                background: 'linear-gradient(135deg, #9C27B0, #E91E63)',
-                color: 'white',
-                padding: '12px 24px',
-                borderRadius: '25px',
-                fontWeight: '600',
-                border: 'none',
-                cursor: 'pointer',
-                boxShadow: '0 8px 25px rgba(156, 39, 176, 0.3)',
-                transition: 'all 0.3s ease',
-                fontSize: '16px'
-              }} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg transition-all">
+              <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:shadow-lg transition-all">
                 ✨ Go to AI Nail Art
               </button>
             </Link>

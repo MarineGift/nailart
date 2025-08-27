@@ -16,20 +16,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            * { box-sizing: border-box; }
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-              margin: 0;
-              padding: 0;
-              background: linear-gradient(135deg, #E6E6FA 0%, #F8BBD9 25%, #E0BBE4 50%, #F5E6D3 75%, #E6F3FF 100%);
-              min-height: 100vh;
-            }
-          `
-        }} />
-      </head>
       <body className="antialiased bg-gradient-to-br from-purple-100 via-pink-100 to-blue-50 min-h-screen">
         <AuthProvider>
           <LayoutContent>{children}</LayoutContent>
