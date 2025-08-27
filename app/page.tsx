@@ -10,7 +10,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 export default function HomePage() {
   const [showBooking, setShowBooking] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [galleryImages, setGalleryImages] = useState([])
+  const [galleryImages, setGalleryImages] = useState<any[]>([])
   
   // 하드코딩된 기본 갤러리 이미지 (데이터베이스 실패시 fallback)
   const defaultGalleryImages = [
