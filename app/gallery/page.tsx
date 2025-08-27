@@ -192,11 +192,19 @@ export default function GalleryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #FCE7F3, #F3E8FF)',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }} className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Hero Carousel Header - Nail Art Gallery */}
-      <section className="-mt-0">
-        <div className="relative overflow-hidden shadow-2xl">
-          <div className="h-96 bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200 relative">
+      <section style={{ marginTop: 0 }} className="-mt-0">
+        <div style={{ position: 'relative', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)' }} className="relative overflow-hidden shadow-2xl">
+          <div style={{
+            height: '384px',
+            background: 'linear-gradient(135deg, #F8BBD9, #D8B4FE, #A5B4FC)',
+            position: 'relative'
+          }} className="h-96 bg-gradient-to-br from-pink-200 via-purple-200 to-indigo-200 relative">
             <div className="absolute inset-0">
               <div 
                 className="absolute inset-0 bg-cover bg-center opacity-40"
@@ -206,12 +214,33 @@ export default function GalleryPage() {
               ></div>
               <div className="absolute inset-0 bg-gradient-to-r from-pink-300/30 via-purple-300/30 to-indigo-300/30"></div>
             </div>
-            <div className="relative z-10 flex items-center justify-center h-full text-center px-8">
+            <div style={{
+              position: 'relative',
+              zIndex: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              textAlign: 'center',
+              padding: '0 32px'
+            }} className="relative z-10 flex items-center justify-center h-full text-center px-8">
               <div>
-                <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
-                  Nail Art Gallery
+                <h1 style={{
+                  fontSize: '48px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  marginBottom: '16px',
+                  textShadow: '0 10px 15px rgba(0, 0, 0, 0.3)'
+                }} className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
+                  💅 Nail Art Gallery
                 </h1>
-                <p className="text-xl text-white/90 drop-shadow-md max-w-2xl mx-auto">
+                <p style={{
+                  fontSize: '20px',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  textShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  maxWidth: '672px',
+                  margin: '0 auto'
+                }} className="text-xl text-white/90 drop-shadow-md max-w-2xl mx-auto">
                   Browse our professional nail art designs and choose your preferred style
                 </p>
                 <div className="mt-6 flex justify-center space-x-4">
@@ -232,8 +261,8 @@ export default function GalleryPage() {
       </section>
 
       {/* Gallery Section */}
-      <section className="pt-16 pb-16">
-        <div className="max-w-6xl mx-auto px-4">
+      <section style={{ paddingTop: '64px', paddingBottom: '64px' }} className="pt-16 pb-16">
+        <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 16px' }} className="max-w-6xl mx-auto px-4">
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600"></div>
@@ -241,10 +270,21 @@ export default function GalleryPage() {
           ) : (
             <>
               {/* 3x4 Gallery Grid (12 images) */}
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '24px',
+                marginBottom: '48px'
+              }} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
                 {getCurrentPageItems().map((item) => (
-                  <div key={item.id} className="group cursor-pointer" onClick={() => handleImageClick(item)}>
-                    <div className="aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div key={item.id} style={{ cursor: 'pointer' }} className="group cursor-pointer" onClick={() => handleImageClick(item)}>
+                    <div style={{
+                      aspectRatio: '1',
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.3s ease'
+                    }} className="aspect-square rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                       <Image
                         src={item.image_url}
                         alt={item.title}
