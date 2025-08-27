@@ -99,6 +99,19 @@ export function Navigation() {
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-200 via-pink-300 to-purple-200 rounded-full"></div>
               )}
             </Link>
+            <Link 
+              href="/admin" 
+              className={`relative py-2 font-medium transition-colors ${
+                pathname === '/admin' 
+                  ? "text-pink-600" 
+                  : "text-gray-700 hover:text-pink-600"
+              }`}
+            >
+              Admin
+              {pathname === '/admin' && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-200 via-pink-300 to-purple-200 rounded-full"></div>
+              )}
+            </Link>
           </nav>
 
           {/* Mobile menu button */}
