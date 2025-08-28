@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/server/db'
-import { settings } from '@/shared/schema'
-import { eq } from 'drizzle-orm'
 
 export async function GET() {
-  // Always return early during build process
-  if (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV) {
-    return NextResponse.json({}, { status: 404 })
-  }
-
   try {
+    // Dynamic imports to avoid build issues
+    const { db } = await import('@/server/db')
+    const { settings } = await import('@/shared/schema')  
+    const { eq } = await import('drizzle-orm')
 
-    const twilioSettings = await db
-      .select()
-      .from(settings)
-      .where(eq(settings.category, 'twilio'))
+    let twilioSettings: any[] = []
+    
+    try {
+      twilioSettings = await db
+        .select()
+        .from(settings)
+        .where(eq(settings.category, 'twilio'))
+    } catch (dbError) {
+      console.log('Database error, returning empty settings:', dbError)
+      return NextResponse.json({}, { status: 404 })
+    }
 
     const config = twilioSettings.reduce((acc, setting) => {
       acc[setting.key] = setting.value || ''
@@ -37,15 +40,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  // Always return early during build process
-  if (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV) {
-    return NextResponse.json(
-      { error: 'Settings service not available during build' },
-      { status: 503 }
-    )
-  }
-
   try {
+    // Dynamic imports to avoid build issues
+    const { db } = await import('@/server/db')
+    const { settings } = await import('@/shared/schema')
+    const { eq } = await import('drizzle-orm')
 
     const { account_sid, auth_token, phone_number } = await request.json()
 

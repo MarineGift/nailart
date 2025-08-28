@@ -1,25 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
-  // Always return early during build process or when missing environment
-  if (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV) {
-    return NextResponse.json(
-      { error: 'SMS service not available during build' },
-      { status: 503 }
-    )
-  }
-
   try {
-    // Use provided Twilio credentials for testing
-    const twilioSettings = {
-      account_sid: process.env.TWILIO_ACCOUNT_SID || 'ACa24a87159bf2e5d77376bb0da09b5218',
-      auth_token: process.env.TWILIO_AUTH_TOKEN || 'e95bad8ab333f397b3a810b7e6799833',
-      phone_number: process.env.TWILIO_PHONE_NUMBER || '+18885493238'
+    const { to, message, customerName = 'Customer' } = await request.json()
+
+    if (!to || !message) {
+      return NextResponse.json(
+        { error: 'Phone number and message are required' },
+        { status: 400 }
+      )
+    }
+
+    // Get Twilio settings from database
+    const { db } = await import('@/server/db')
+    const { settings } = await import('@/shared/schema')
+    const { eq } = await import('drizzle-orm')
+
+    let twilioSettings: { [key: string]: string } = {}
+    
+    try {
+      const settingsData = await db
+        .select()
+        .from(settings)
+        .where(eq(settings.category, 'twilio'))
+
+      settingsData.forEach(setting => {
+        twilioSettings[setting.key] = setting.value || ''
+      })
+    } catch (dbError) {
+      // Fallback to default settings if database fails
+      twilioSettings = {
+        'account_sid': 'ACa24a87159bf2e5d77376bb0da09b5218',
+        'auth_token': 'e95bad8ab333f397b3a810b7e6799833',
+        'phone_number': '+18885493238'
+      }
     }
     
     if (!twilioSettings.account_sid || !twilioSettings.auth_token || !twilioSettings.phone_number) {
       return NextResponse.json(
-        { error: 'SMS service not configured.' },
+        { error: 'SMS service not configured. Please configure Twilio settings in admin panel.' },
         { status: 503 }
       )
     }
@@ -27,15 +46,6 @@ export async function POST(request: NextRequest) {
     // Dynamically import Twilio to avoid build issues
     const { default: twilio } = await import('twilio')
     const client = twilio(twilioSettings.account_sid, twilioSettings.auth_token)
-
-    const { to, message, customerName } = await request.json()
-
-    if (!to || !message) {
-      return NextResponse.json(
-        { error: 'Missing required fields: to, message' },
-        { status: 400 }
-      )
-    }
 
     // Format phone number (remove any formatting and ensure it starts with +1 for US numbers)
     let formattedPhone = to.replace(/\D/g, '') // Remove all non-digits
