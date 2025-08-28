@@ -1,176 +1,83 @@
-import { NextRequest, NextResponse } from 'next/server'
+// app/api/send-sms/route.ts
+import { NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
-  // ULTRA SAFE: Multiple build detection methods
-  const isProduction = process.env.NODE_ENV === 'production'
-  const hasVercelEnv = !!process.env.VERCEL_ENV
-  const hasDatabase = !!process.env.DATABASE_URL
-  const hasRuntimeFlag = !!process.env.RUNTIME_ENV
-  
-  // If in production build without proper runtime environment, return safe response
-  if (isProduction && !hasVercelEnv && !hasRuntimeFlag) {
-    return NextResponse.json({
-      success: true,
-      message: 'SMS service is ready',
-      mode: 'build-safe'
-    })
-  }
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-  // If no database in production, also return safe response  
-  if (isProduction && !hasDatabase && !hasVercelEnv) {
-    return NextResponse.json({
-      success: true,
-      message: 'SMS service initialized',
-      mode: 'production-safe'
-    })
-  }
+// ---- 공통 JSON 응답 헬퍼 & CORS ----
+function json(data: unknown, status = 200, headers: HeadersInit = {}) {
+  return new NextResponse(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json; charset=utf-8", ...headers },
+  });
+}
 
-  try {
-    const { to, message, customerName = 'Customer' } = await request.json()
+const CORS_HEADERS: Record<string, string> = {
+  // 필요한 경우 '*' 대신 프론트 도메인으로 제한하세요: 'https://your-domain.com'
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
 
-    if (!to || !message) {
-      return NextResponse.json(
-        { error: 'Phone number and message are required' },
-        { status: 400 }
-      )
-    }
-
-    // Default fallback settings - no environment variables needed
-    let twilioSettings = {
-      account_sid: 'ACa24a87159bf2e5d77376bb0da09b5218',
-      auth_token: 'e95bad8ab333f397b3a810b7e6799833', 
-      phone_number: '+18885493238'
-    }
-    
-    // Only try database if we're in a safe runtime environment
-    if (hasVercelEnv || (!isProduction) || hasRuntimeFlag) {
-      try {
-        const { db } = await import('@/server/db')
-        const { settings } = await import('@/shared/schema')
-        const { eq } = await import('drizzle-orm')
-
-        const settingsData = await db
-          .select()
-          .from(settings)
-          .where(eq(settings.category, 'twilio'))
-
-        if (settingsData.length > 0) {
-          const dbSettings: { [key: string]: string } = {}
-          settingsData.forEach(setting => {
-            dbSettings[setting.key] = setting.value || ''
-          })
-          
-          if (dbSettings.account_sid && dbSettings.auth_token && dbSettings.phone_number) {
-            twilioSettings = dbSettings
-          }
-        }
-      } catch (dbError) {
-        console.log('Database unavailable, using fallback settings')
-      }
-    }
-    
-    // Validate settings
-    if (!twilioSettings.account_sid || !twilioSettings.auth_token || !twilioSettings.phone_number) {
-      return NextResponse.json(
-        { error: 'SMS service configuration incomplete' },
-        { status: 503 }
-      )
-    }
-
-    // Only import Twilio in safe runtime environments
-    if (!hasVercelEnv && isProduction && !hasRuntimeFlag) {
-      return NextResponse.json(
-        { error: 'SMS service not available in this environment' },
-        { status: 503 }
-      )
-    }
-
-    // Dynamic Twilio import with error handling
-    let client
-    try {
-      const { default: twilio } = await import('twilio')
-      client = twilio(twilioSettings.account_sid, twilioSettings.auth_token)
-    } catch (twilioError) {
-      return NextResponse.json(
-        { error: 'SMS service initialization failed' },
-        { status: 503 }
-      )
-    }
-
-    // Format phone number
-    let formattedPhone = to.replace(/\D/g, '')
-    if (formattedPhone.length === 10) {
-      formattedPhone = '+1' + formattedPhone
-    } else if (formattedPhone.length === 11 && formattedPhone.startsWith('1')) {
-      formattedPhone = '+' + formattedPhone
-    } else if (!formattedPhone.startsWith('+')) {
-      formattedPhone = '+' + formattedPhone
-    }
-
-    // Check sender/receiver conflict
-    if (formattedPhone === twilioSettings.phone_number) {
-      return NextResponse.json(
-        { 
-          error: 'Cannot send SMS to sender number',
-          details: `From: ${twilioSettings.phone_number}, To: ${formattedPhone}` 
-        },
-        { status: 400 }
-      )
-    }
-
-    const smsMessage = `ConnieNail Salon
-
-Hi ${customerName || 'there'},
-
-${message}
-
-Best regards,
-ConnieNail Team
-
-📍 Ronald Reagan Building, Space C-044
-1300 Pennsylvania Ave NW, Washington DC
-📞 (202) 898-0826`
-
-    const result = await client.messages.create({
-      body: smsMessage,
-      from: twilioSettings.phone_number,
-      to: formattedPhone
-    })
-
-    return NextResponse.json({
-      success: true,
-      message: 'SMS sent successfully',
-      messageSid: result.sid
-    })
-
-  } catch (error: any) {
-    console.error('SMS error:', error)
-    
-    // Safe error response for production builds
-    if (isProduction && !hasVercelEnv && !hasRuntimeFlag) {
-      return NextResponse.json({
-        success: true,
-        message: 'SMS service ready - build mode',
-        mode: 'build-error-safe'
-      })
-    }
-    
-    return NextResponse.json(
-      { 
-        error: 'Failed to send SMS',
-        details: error.message 
-      },
-      { status: 500 }
-    )
-  }
+export async function OPTIONS() {
+  return json({}, 204, CORS_HEADERS);
 }
 
 export async function GET() {
-  // Always safe response for GET requests
-  return NextResponse.json({
-    service: 'SMS API',
-    status: 'ready',
-    methods: ['POST'],
-    description: 'Use POST to send SMS messages'
-  })
+  return json({ error: "Method Not Allowed" }, 405, CORS_HEADERS);
+}
+
+// ---- 입력 검증 ----
+type Payload = { to?: string; body?: string };
+// E.164 국제전화번호 형식 (예: +15715318234)
+const E164 = /^\+?[1-9]\d{1,14}$/;
+
+export async function POST(req: Request) {
+  try {
+    const { to, body } = (await req.json()) as Payload;
+
+    if (!to || !body) {
+      return json(
+        { ok: false, error: "필수 필드 누락: 'to', 'body'가 필요합니다." },
+        400,
+        CORS_HEADERS
+      );
+    }
+    if (!E164.test(to)) {
+      return json(
+        { ok: false, error: "전화번호 형식이 올바르지 않습니다. 예: +15715551234 (E.164)" },
+        400,
+        CORS_HEADERS
+      );
+    }
+
+    const sid = process.env.TWILIO_ACCOUNT_SID;
+    const token = process.env.TWILIO_AUTH_TOKEN;
+    const from = process.env.TWILIO_PHONE_NUMBER;
+
+    // 환경변수 미설정: 빌드 실패 대신 런타임에서 안전하게 처리
+    if (!sid || !token || !from) {
+      console.warn("Twilio 환경변수가 설정되지 않았습니다. (mock 응답 반환)");
+      return json(
+        { ok: false, mocked: true, error: "서버에 Twilio 환경변수가 설정되지 않았습니다." },
+        200,
+        CORS_HEADERS
+      );
+    }
+
+    // 빌드 시 평가 방지: 동적 import
+    const { default: twilio } = await import("twilio");
+    const client = twilio(sid, token);
+
+    const res = await client.messages.create({ to, from, body });
+
+    return json({ ok: true, sid: res.sid }, 200, CORS_HEADERS);
+  } catch (err: unknown) {
+    const message =
+      (typeof err === "object" && err && "message" in err && String((err as any).message)) ||
+      "Internal Server Error";
+    // 민감정보 노출 방지: 원문 메시지 그대로 로그 출력은 지양
+    console.error("SMS send error:", message);
+    return json({ ok: false, error: message }, 500, CORS_HEADERS);
+  }
 }
