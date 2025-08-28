@@ -2,8 +2,8 @@
 import { Suspense } from "react";
 import PaymentClient from "./payment-client";
 
-export const dynamic = "force-dynamic"; // 사전 렌더/ISR 제외 (CSR로 처리)
-// export const revalidate = 0;         // 위 대신 이 옵션을 사용해도 됨
+export const dynamic = "force-dynamic";   // SSG/ISR 제외 (사전렌더 방지)
+// export const revalidate = 0;           // 위 대신 사용 가능
 
 export default function PaymentPage() {
   return (
