@@ -99,6 +99,47 @@ export async function sendNewBookingEmailToAdmin(bookingData: BookingNotificatio
 
 // SMS 알림 발송 (Twilio 사용)
 export async function sendNewBookingSMSToAdmin(bookingData: BookingNotificationData) {
-  console.log('SMS service not configured - skipping SMS notification')
-  return { success: false, error: 'SMS service not configured' }
+  // Skip during build time
+  if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    console.log('Skipping SMS notification during build')
+    return { success: false, error: 'SMS service not available during build' }
+  }
+
+  // Twilio 클라이언트는 API route에서 호출하는 방식으로 구현
+  const { customerName, customerPhone, bookingDate, timeSlot, bookingSource } = bookingData
+  
+  const message = `🎉 새 예약 알림
+  
+고객: ${customerName}
+연락처: ${customerPhone}
+일시: ${bookingDate} ${timeSlot}
+경로: ${bookingSource}
+
+관리자 패널에서 확인해 주세요.`
+
+  try {
+    const response = await fetch('/api/send-sms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: '+1234567890', // 관리자 전화번호 - 실제 번호로 변경 필요
+        message: message,
+        customerName: customerName
+      })
+    })
+
+    if (response.ok) {
+      console.log(`✅ 새 예약 SMS 알림 발송 성공: ${customerName}`)
+      return { success: true }
+    } else {
+      const error = await response.text()
+      console.error('❌ 새 예약 SMS 알림 발송 실패:', error)
+      return { success: false, error }
+    }
+  } catch (error) {
+    console.error('❌ 새 예약 SMS 알림 발송 실패:', error)
+    return { success: false, error }
+  }
 }
