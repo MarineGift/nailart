@@ -26,7 +26,6 @@ interface Booking {
   service_id: string
   duration: number
   notes: string
-  source?: string
   created_by?: string
 }
 
@@ -83,12 +82,11 @@ export function AdminBookingCalendar({ currentUser }: AdminBookingCalendarProps)
   const [customerGender, setCustomerGender] = useState('')
   const [selectedService, setSelectedService] = useState('')
   const [notes, setNotes] = useState('')
-  const [bookingSource, setBookingSource] = useState('Call')
 
   const timeSlots = [
     '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
     '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
+    '16:00', '16:30', '17:00', '17:30', '18:00'
   ]
 
   // Staff are already filtered by API to show only working staff for selected date
@@ -237,7 +235,6 @@ export function AdminBookingCalendar({ currentUser }: AdminBookingCalendarProps)
     setCustomerGender('')
     setSelectedService('')
     setNotes('')
-    setBookingSource('Call')
   }
 
   // Handle View booking
@@ -259,11 +256,11 @@ export function AdminBookingCalendar({ currentUser }: AdminBookingCalendarProps)
     if (!service) {
       service = services.find(s => s.id === 'svc-003') || services[0] // Gel Manicure 기본
     }
-    const serviceName = (booking as any).service_names || service?.name || 'Gel Manicure'
+    const serviceName = service?.name || 'Gel Manicure'
     
     const details = [
       `Customer: ${customerName}`,
-      `Phone: ${customer?.phone_raw || customer?.phone_number || 'N/A'}`,
+      `Phone: ${customer?.phone_number || 'N/A'}`,
       `Service: ${serviceName}`,
       `Time: ${booking.time_slot}`,
       `Status: ${booking.status}`,
@@ -271,9 +268,7 @@ export function AdminBookingCalendar({ currentUser }: AdminBookingCalendarProps)
       booking.created_by ? `Source: ${booking.created_by}` : ''
     ].filter(Boolean).join('\n')
     
-    // Remove UUID and make it more user-friendly
-    const cleanDetails = details.replace(/^[a-f0-9\-]{30,}/gm, '').trim()
-    alert(cleanDetails)
+    alert(details)
   }
 
   // Handle Edit booking  
@@ -309,7 +304,6 @@ export function AdminBookingCalendar({ currentUser }: AdminBookingCalendarProps)
         customer_phone: customerPhone,
         customer_gender: customerGender,
         service_id: selectedService,
-        source: bookingSource,
         notes
       })
 
@@ -404,11 +398,11 @@ export function AdminBookingCalendar({ currentUser }: AdminBookingCalendarProps)
                     <div key={staffMember.id} className="bg-white rounded border p-3">
                       <div className="flex items-center space-x-2 mb-2">
                         <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                          {(staffMember.firstName || 'U')[0]}{(staffMember.lastName || 'N')[0]}
+                          {(staffMember.first_name || 'U')[0]}{(staffMember.last_name || 'N')[0]}
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-sm">{staffMember.firstName || 'Unknown'} {staffMember.lastName || 'Staff'}</p>
-                          <p className="text-xs text-gray-600">{staffMember.position || 'Staff'}</p>
+                          <p className="font-semibold text-sm">{staffMember.first_name || 'Unknown'} {staffMember.last_name || 'Staff'}</p>
+                          <p className="text-xs text-gray-600">{staffMember.role || 'Staff'}</p>
                         </div>
                       </div>
                       <div className="text-xs space-y-1">
@@ -575,7 +569,7 @@ export function AdminBookingCalendar({ currentUser }: AdminBookingCalendarProps)
                                 </Badge>
                               </div>
                               <div className="text-xs text-gray-600 space-y-1">
-                                <div>💅 {(booking as any).service_names || service?.name || 'Gel Manicure'}</div>
+                                <div>💅 {service?.name || 'Gel Manicure'}</div>
                                 <div>👤 {assignedStaff ? `${assignedStaff.firstName} ${assignedStaff.lastName}` : 'Unassigned'}</div>
                                 {booking.duration && <div>⏱️ {booking.duration} min</div>}
                                 {booking.source && <div className="text-gray-500">📍 {booking.source}</div>}
@@ -634,44 +628,26 @@ export function AdminBookingCalendar({ currentUser }: AdminBookingCalendarProps)
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Name field - left aligned */}
-            <div className="space-y-2">
-              <Label htmlFor="customer-name" className="text-left">Name</Label>
-              <Input
-                id="customer-name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Enter customer name"
-                className="text-left"
-                required
-              />
-            </div>
-            
-            {/* Phone and Source fields side by side */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="customer-phone" className="text-left">Phone</Label>
+              <div>
+                <Label htmlFor="customer-name">Customer Name *</Label>
+                <Input
+                  id="customer-name"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Enter customer name"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="customer-phone">Phone Number *</Label>
                 <Input
                   id="customer-phone"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="(123) 456-7890"
-                  className="text-left"
+                  placeholder="010-0000-0000"
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="booking-source" className="text-left">Source</Label>
-                <Select value={bookingSource} onValueChange={setBookingSource}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select source" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Call">Call</SelectItem>
-                    <SelectItem value="Visit">Visit</SelectItem>
-                    <SelectItem value="Rebooking">Rebooking</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
             <div>

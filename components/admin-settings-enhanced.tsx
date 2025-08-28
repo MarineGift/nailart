@@ -9,8 +9,7 @@ import { ServicesManagement } from '@/components/services-management'
 import { CarouselManagement } from '@/components/carousel-management'
 import { GalleryManagement } from '@/components/gallery-management'
 import { LogHistory } from '@/components/log-history'
-import { AdminSettingsCombined } from '@/components/admin-settings-combined'
-import { Settings, Package, Percent, Image, RotateCcw, Clock, CalendarX, Mail } from 'lucide-react'
+import { Settings, Package, Percent, Image, RotateCcw, Clock, CalendarX } from 'lucide-react'
 
 interface AdminSettingsEnhancedProps {
   currentUser?: any
@@ -31,8 +30,8 @@ export function AdminSettingsEnhanced({ currentUser }: AdminSettingsEnhancedProp
         </CardHeader>
       </Card>
 
-      <Tabs defaultValue="admin-settings" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7 bg-gray-100 p-1 rounded-lg">
+      <Tabs defaultValue="discount" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6 bg-gray-100 p-1 rounded-lg">
           <TabsTrigger 
             value="discount" 
             className="flex items-center gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
@@ -75,13 +74,6 @@ export function AdminSettingsEnhanced({ currentUser }: AdminSettingsEnhancedProp
             <CalendarX className="h-4 w-4" />
 Holiday Management
           </TabsTrigger>
-          <TabsTrigger 
-            value="admin-settings" 
-            className="flex items-center gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
-          >
-            <Mail className="h-4 w-4" />
-            Admin Settings
-          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="discount">
@@ -106,10 +98,6 @@ Holiday Management
 
         <TabsContent value="holidays">
           <HolidayManagement />
-        </TabsContent>
-
-        <TabsContent value="admin-settings">
-          <AdminSettingsCombined />
         </TabsContent>
       </Tabs>
     </div>

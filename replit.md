@@ -1,77 +1,77 @@
-# ConnieNail - Luxury Nail Salon Management System
+# Overview
 
-## Overview
-ConnieNail is a comprehensive web-based management platform for a premium nail salon located in Washington, DC. The application serves as a complete business solution handling appointment bookings, customer relationship management, staff scheduling, payment processing, and business analytics. Built with modern web technologies, it supports multiple user roles including customers, staff, managers, and administrators with role-based access control.
+ConnieNail is a comprehensive luxury nail salon management platform built with Next.js and TypeScript. The system provides a full-stack solution for managing bookings, customers, staff, services, and payments for a professional nail salon located in Washington, DC. The platform includes both customer-facing booking functionality and a complete admin dashboard for salon management.
 
-## User Preferences
+# User Preferences
+
 Preferred communication style: Simple, everyday language.
 
-## System Architecture
+# System Architecture
 
-### Frontend Architecture
-The application uses Next.js 14 with TypeScript as the primary frontend framework, implementing the App Router architecture. The UI is built with React components using shadcn/ui component library and styled with Tailwind CSS. The design follows a gradient-based aesthetic with pink and purple themes suitable for a luxury salon brand.
+## Frontend Architecture
+- **Framework**: Next.js 14 with TypeScript and App Router
+- **UI Components**: Shadcn/ui component library with Radix UI primitives
+- **Styling**: Tailwind CSS with custom design system
+- **State Management**: React hooks with local state management
+- **Authentication**: Context-based auth provider with role-based access control
+- **Responsive Design**: Mobile-first approach with comprehensive breakpoint coverage
 
-**Key architectural decisions:**
-- **Next.js App Router**: Chosen for its server-side rendering capabilities and improved performance
-- **TypeScript**: Provides type safety and better developer experience
-- **Component-based architecture**: Uses shadcn/ui for consistent, accessible UI components
-- **Responsive design**: Tailwind CSS ensures mobile-first responsive layouts
+## Backend Architecture
+- **Database ORM**: Drizzle ORM for type-safe database operations
+- **API Routes**: Next.js API routes for RESTful endpoints
+- **Database**: PostgreSQL configured via environment variables
+- **Schema Management**: Centralized schema in `shared/schema.ts`
+- **Server Components**: Leveraging Next.js server-side rendering capabilities
 
-### Backend Architecture
-The system uses Next.js API routes for backend functionality, implementing a RESTful API pattern. Database operations are handled through Drizzle ORM with PostgreSQL as the primary database.
+## Data Storage Solutions
+- **Primary Database**: PostgreSQL with SSL connection
+- **ORM**: Drizzle with automatic migrations and type generation
+- **File Storage**: Image optimization through Next.js with remote pattern support
+- **Configuration**: Environment-based database credentials
 
-**Key architectural decisions:**
-- **API Routes**: Next.js API routes provide serverless backend functionality
-- **Drizzle ORM**: Type-safe database operations with PostgreSQL
-- **Role-based authentication**: Custom authentication system with localStorage persistence
-- **Server-side validation**: Ensures data integrity and security
+## Authentication and Authorization
+- **Role-Based Access**: Admin, Manager, and Staff roles with different permission levels
+- **Session Management**: Browser localStorage with role persistence
+- **Protected Routes**: Component-level permission checking
+- **Mock Authentication**: Development-ready user system with predefined credentials
 
-### Data Storage Solutions
-The application uses PostgreSQL as the primary database with Drizzle ORM for type-safe database operations. The schema includes comprehensive tables for customers, staff, services, bookings, payments, and system settings.
+## Key Business Features
+- **Booking Management**: Full customer booking flow with time slot availability
+- **Customer Relationship Management**: Comprehensive customer tracking and VIP status
+- **Staff Management**: Employee scheduling, work status, and performance tracking
+- **Service Management**: Dynamic service catalog with pricing and duration
+- **Payment Processing**: Stripe integration for secure payment handling
+- **Analytics Dashboard**: Revenue tracking, booking analytics, and staff performance
+- **Calendar System**: Advanced scheduling with employee assignment capabilities
 
-**Database design rationale:**
-- **PostgreSQL**: Chosen for its reliability, ACID compliance, and advanced features
-- **Normalized schema**: Reduces data redundancy and ensures consistency
-- **Flexible booking system**: Supports complex scheduling requirements and staff assignments
-- **Audit trails**: Tracks booking sources, payment records, and user activities
+# External Dependencies
 
-### Authentication and Authorization
-The system implements a custom authentication mechanism with role-based access control supporting four user types: customers, staff, managers, and administrators.
+## Payment Processing
+- **Stripe**: Payment gateway integration with React Stripe.js components
+- **Webhooks**: Stripe webhook handling for payment confirmations
+- **Security**: PCI-compliant payment processing
 
-**Security approach:**
-- **Role-based permissions**: Different access levels for different user types
-- **Client-side state management**: Uses React Context for authentication state
-- **Local storage persistence**: Maintains login sessions across browser refreshes
-- **Permission helpers**: Centralized authorization logic for different operations
+## Email Services
+- **SendGrid**: Email delivery service for booking confirmations and notifications
+- **Templates**: Automated email workflows for customer communication
 
-## External Dependencies
+## UI Component Libraries
+- **Radix UI**: Accessible component primitives for complex UI interactions
+- **Lucide React**: Icon library for consistent visual elements
+- **Date-fns**: Date manipulation and formatting utilities
 
-### Payment Processing
-- **Stripe**: Integrated for secure payment processing with support for both one-time payments and subscription billing
-- **Stripe React components**: Used for PCI-compliant payment form handling
-
-### Communication Services
-- **SendGrid**: Email service integration for automated notifications and marketing communications
-- **SMS capabilities**: Planned integration for customer notifications and confirmations
-
-### UI and Styling
-- **Radix UI**: Accessible, unstyled UI primitives for complex components
-- **Tailwind CSS**: Utility-first CSS framework for responsive design
-- **Framer Motion**: Animation library for enhanced user experience
-- **Lucide React**: Icon library for consistent iconography
-
-### Development and Build Tools
-- **TypeScript**: Static type checking and improved developer experience
-- **ESLint**: Code linting and quality assurance
-- **PostCSS**: CSS processing and optimization
-
-### Image and Media Management
-- **Next.js Image**: Optimized image loading and processing
-- **External image hosting**: Support for various image providers through URL-based management
-
-### Database and ORM
+## Database and ORM
+- **PostgreSQL**: Production-ready relational database
 - **Drizzle Kit**: Database migration and schema management tools
-- **PostgreSQL**: Primary database system for data persistence
-- **Connection pooling**: Efficient database connection management
+- **Connection Pooling**: Optimized database connection handling
 
-The architecture prioritizes maintainability, scalability, and user experience while providing comprehensive salon management capabilities. The modular design allows for easy feature additions and modifications as business requirements evolve.
+## Development Tools
+- **TypeScript**: Full type safety across the application
+- **ESLint**: Code quality and consistency enforcement
+- **PostCSS**: CSS processing with Tailwind CSS integration
+- **Autoprefixer**: Cross-browser CSS compatibility
+
+## Third-Party Integrations
+- **Image Optimization**: Next.js Image component with remote pattern support
+- **CDN**: Unsplash integration for high-quality salon imagery
+- **Analytics**: Built-in booking and revenue analytics system

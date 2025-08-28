@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://hkqudtzlgzohxhevvcem.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrcXVkdHpsZ3pvaHhldnZjZW0iLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNzM1NTUxMTQ4LCJleHAiOjIwNTExMjcxNDh9.9HZJUhGMOxQI8n6vH8DtuUtJ6z2mE8TQKGE5x6qwPR8';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // GET - 갤러리 이미지 조회
 export async function GET(request: Request) {
@@ -7,9 +12,8 @@ export async function GET(request: Request) {
     console.log('=== GALLERY IMAGES GET API START ===');
 
     const { data: images, error } = await supabase
-      .from('images')
+      .from('gallery_images')
       .select('*')
-      .eq('category', 'gallery')
       .eq('is_active', true)
       .order('sort_order', { ascending: true });
 
@@ -20,20 +24,9 @@ export async function GET(request: Request) {
 
     console.log(`✅ Found ${images?.length || 0} gallery images`);
 
-    // Map images from new format to legacy format for compatibility
-    const mappedImages = images?.map(image => ({
-      id: image.id,
-      title: image.name,
-      description: image.description,
-      image_url: image.url,
-      gradient_color: '#667eea',
-      sort_order: image.sort_order,
-      is_active: image.is_active
-    })) || []
-
     return NextResponse.json({
       success: true,
-      images: mappedImages
+      images: images || []
     });
 
   } catch (error) {
@@ -52,14 +45,15 @@ export async function POST(request: Request) {
     const { title, description, imageUrl, gradientColor, sortOrder, createdBy } = await request.json();
 
     const { data: newImage, error } = await supabase
-      .from('images')
+      .from('gallery_images')
       .insert({
-        name: title,
-        description: description || '',
-        url: imageUrl,
-        category: 'gallery',
+        title,
+        description,
+        image_url: imageUrl,
+        gradient_color: gradientColor,
         sort_order: sortOrder || 0,
-        is_active: true
+        is_active: true,
+        created_by: createdBy
       })
       .select()
       .single();
@@ -69,7 +63,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to create gallery image' }, { status: 500 });
     }
 
-    console.log('✅ Gallery image created:', newImage.name);
+    console.log('✅ Gallery image created:', newImage.title);
 
     return NextResponse.json({
       success: true,

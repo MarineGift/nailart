@@ -24,6 +24,7 @@ import { ARNailTryOn } from '@/components/ar-nail-tryon'
 import { NailDesignManager } from '@/components/nail-design-manager'
 import { AdminBookingCalendar } from '@/components/admin-booking-calendar'
 import { AdminCalendarAssignment } from '@/components/admin-calendar-assignment'
+import { AdminAssignmentInterface } from '@/components/admin-assignment-interface'
 import { CustomerSheetManagement } from '@/components/customer-sheet-management'
 import { CRMManagement } from '@/components/crm-management'
 import { StaffManagement } from '@/components/staff-management'
@@ -31,7 +32,6 @@ import { ServicesManagement } from '@/components/services-management'
 import { TreatmentManagement } from '@/components/treatment-management'
 import { EnhancedAssignmentInterface } from '@/components/enhanced-assignment-interface'
 import { HolidayManagement } from '@/components/holiday-management'
-import ImageManagementInterface from '@/components/image-management-interface'
 import { Users, Image, Newspaper, BarChart3, Shield, Calendar, CalendarIcon, UserCheck, Package, Sparkles, Settings, Camera, Palette, LogOut, CreditCard, TrendingUp, Star, User, Mail, Menu, X, ClipboardCheck, MessageSquare } from 'lucide-react'
 
 interface DashboardTabsProps {
@@ -254,86 +254,80 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
 
   // Admin Dashboard (for admin and manager roles)
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
 
-      {/* Admin Tabs - Dashboard 최상단 위치 */}
-      <Tabs defaultValue="dashboard" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+
+      {/* Admin Tabs - 바로 상단 카드 아래 배치 */}
+      <Tabs defaultValue="dashboard" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         {/* Desktop Tabs - Enhanced styling for better differentiation */}
         <div className="hidden lg:block">
-          <TabsList className="grid w-full grid-cols-12 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 p-2 rounded-2xl shadow-lg border border-purple-200 items-center">
+          <TabsList className="grid w-full grid-cols-11 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 p-2 rounded-2xl shadow-lg border border-purple-200">
           <TabsTrigger 
             value="dashboard" 
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg"
           >
             <BarChart3 className="h-4 w-4 mr-2" />
             Dashboard
           </TabsTrigger>
           <TabsTrigger 
             value="calendar"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg"
           >
             <CalendarIcon className="h-4 w-4 mr-2" />
             Booking
           </TabsTrigger>
           <TabsTrigger 
             value="assign"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg"
           >
             <Users className="h-4 w-4 mr-2" />
             Assignment
           </TabsTrigger>
           <TabsTrigger 
             value="customer-management"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg"
           >
             <User className="h-4 w-4 mr-2" />
             Customers
           </TabsTrigger>
           <TabsTrigger 
             value="staff"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg"
           >
             <UserCheck className="h-4 w-4 mr-2" />
             Staff
           </TabsTrigger>
           <TabsTrigger 
             value="crm"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg"
           >
             <Mail className="h-4 w-4 mr-2" />
             CRM
           </TabsTrigger>
           <TabsTrigger 
             value="payments"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg"
           >
             <CreditCard className="h-4 w-4 mr-2" />
             Payments
           </TabsTrigger>
           <TabsTrigger 
             value="treatment"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg"
           >
             <ClipboardCheck className="h-4 w-4 mr-2" />
             Treatment
           </TabsTrigger>
           <TabsTrigger 
             value="inquiries"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg"
           >
             <MessageSquare className="h-4 w-4 mr-2" />
             Inquiries
           </TabsTrigger>
           <TabsTrigger 
-            value="images"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
-          >
-            <Image className="h-4 w-4 mr-2" />
-            Images
-          </TabsTrigger>
-          <TabsTrigger 
             value="settings"
-            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg flex items-center justify-center"
+            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200 text-sm px-3 py-2 rounded-lg"
           >
             <Settings className="h-4 w-4 mr-2" />
             Settings
@@ -357,7 +351,6 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
               {activeTab === 'payments' && <><CreditCard className="h-4 w-4" /> Payments</>}
               {activeTab === 'treatment' && <><ClipboardCheck className="h-4 w-4" /> Treatment</>}
               {activeTab === 'inquiries' && <><MessageSquare className="h-4 w-4" /> Inquiries</>}
-              {activeTab === 'images' && <><Image className="h-4 w-4" /> Images</>}
               {activeTab === 'settings' && <><Settings className="h-4 w-4" /> Settings</>}
             </span>
             {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -401,10 +394,6 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
                 className={activeTab === 'inquiries' ? 'bg-purple-100 text-purple-800' : ''}>
                 <MessageSquare className="h-4 w-4 mr-2" /> Inquiries
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => { setActiveTab('images'); setIsMobileMenuOpen(false) }}
-                className={activeTab === 'images' ? 'bg-purple-100 text-purple-800' : ''}>
-                <Image className="h-4 w-4 mr-2" /> Images
-              </Button>
               <Button variant="ghost" size="sm" onClick={() => { setActiveTab('settings'); setIsMobileMenuOpen(false) }}
                 className={activeTab === 'settings' ? 'bg-purple-100 text-purple-800' : ''}>
                 <Settings className="h-4 w-4 mr-2" /> Settings
@@ -414,139 +403,19 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
         </div>
 
         {/* Tab Content */}
-        <TabsContent value="dashboard" className="space-y-4">
-          {/* Top Small Statistics Cards - Compact Single Line */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium text-purple-700">Today's Bookings</CardTitle>
-                <Calendar className="h-3 w-3 text-purple-600" />
-              </CardHeader>
-              <CardContent className="pb-2 px-3">
-                <div className="text-lg font-bold text-purple-900 mb-1">
-                  {dashboardStats.todaysBookings}
-                </div>
-                <p className="text-xs text-purple-600">
-                  {dashboardStats.completedToday} completed
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card 
-              className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 shadow-sm cursor-pointer"
-              onClick={() => setShowCustomerSheet(true)}
-              data-testid="card-total-customers"
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium text-blue-700">Total Customers</CardTitle>
-                <Users className="h-3 w-3 text-blue-600" />
-              </CardHeader>
-              <CardContent className="pb-2 px-3">
-                <div className="text-lg font-bold text-blue-900 mb-1">
-                  {dashboardStats.totalCustomers}
-                </div>
-                <p className="text-xs text-blue-600">+12 new</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium text-green-700">Monthly Revenue</CardTitle>
-                <Sparkles className="h-3 w-3 text-green-600" />
-              </CardHeader>
-              <CardContent className="pb-2 px-3">
-                <div className="text-lg font-bold text-green-900 mb-1">
-                  $0
-                </div>
-                <p className="text-xs text-green-600">+18% growth</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium text-orange-700">Active Staff</CardTitle>
-                <Users className="h-3 w-3 text-orange-600" />
-              </CardHeader>
-              <CardContent className="pb-2 px-3">
-                <div className="text-lg font-bold text-orange-900 mb-1">
-                  {dashboardStats.activeStaff}
-                </div>
-                <p className="text-xs text-orange-600">
-                  All available
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Additional Dashboard Cards - Compact Single Line */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <Card className="bg-gradient-to-br from-purple-100 to-purple-200 border border-purple-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium text-purple-800">Today's Bookings & Payment</CardTitle>
-                <Calendar className="h-3 w-3 text-purple-600" />
-              </CardHeader>
-              <CardContent className="pb-2 px-3">
-                <div className="text-lg font-bold text-purple-900 mb-1">
-                  {dashboardStats.todaysBookings}/{dashboardStats.completedToday + dashboardStats.scheduledToday}
-                </div>
-                <p className="text-xs text-purple-700">
-                  ${Math.round(dashboardStats.monthlyRevenueUsd)} revenue
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-orange-100 to-orange-200 border border-orange-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium text-orange-800">Pending Actions</CardTitle>
-                <TrendingUp className="h-3 w-3 text-orange-600" />
-              </CardHeader>
-              <CardContent className="pb-2 px-3">
-                <div className="text-lg font-bold text-orange-900 mb-1">0</div>
-                <p className="text-xs text-orange-700">
-                  0 unassigned
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-green-100 to-green-200 border border-green-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium text-green-800">Total Customers</CardTitle>
-                <Users className="h-3 w-3 text-green-600" />
-              </CardHeader>
-              <CardContent className="pb-2 px-3">
-                <div className="text-lg font-bold text-green-900 mb-1">
-                  {dashboardStats.totalCustomers}
-                </div>
-                <p className="text-xs text-green-700">
-                  Registered
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-purple-100 to-purple-200 border border-purple-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-3 pt-3">
-                <CardTitle className="text-xs font-medium text-purple-800">Today's Performance</CardTitle>
-                <Star className="h-3 w-3 text-purple-600" />
-              </CardHeader>
-              <CardContent className="pb-2 px-3">
-                <div className="text-lg font-bold text-purple-900 mb-1">100%</div>
-                <p className="text-xs text-purple-700">
-                  Completion rate
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
+        <TabsContent value="dashboard" className="space-y-6">
+          <AdminDashboardOverview />
+          
           {/* Today's Bookings List & Working Staff */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
             {/* Today's Bookings List */}
             <div className="bg-white rounded-xl p-6 shadow-lg border-0">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                   <Calendar className="h-5 w-5 mr-2 text-purple-600" />
-                  Today's Bookings ({dashboardStats.todaysBookings})
+                  Today's Bookings ({todaysBookings.length})
                 </h2>
-                <p className="text-sm text-gray-500">Aug 21, 2025</p>
+                <p className="text-sm text-gray-500">{format(new Date(), 'MMM dd, yyyy')}</p>
               </div>
               
               {/* Bookings List */}
@@ -563,7 +432,7 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
                         <div className="w-2 h-2 rounded-full bg-purple-500"></div>
                         <div>
                           <p className="font-medium text-gray-800">
-                            {booking.time_slot || 'Unknown'} - {booking.customerName || booking.customer_name || 'Unknown Customer'}
+                            {booking.time_slot || 'Unknown'} - {booking.customer_name || booking.customers?.last_name || 'Unknown Customer'}
                           </p>
                           <p className="text-sm text-gray-600">{booking.serviceName || booking.service_name || booking.services || 'Unknown Service'}</p>
                         </div>
@@ -575,7 +444,8 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
                           'bg-orange-100 text-orange-600'
                         }`}>
                           {booking.status === 'completed' ? 'Completed' :
-                           booking.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                           booking.status === 'confirmed' ? 'Confirmed' : 
+                           booking.status === 'scheduled' ? 'Scheduled' : 'Pending'}
                         </span>
                       </div>
                     </div>
@@ -589,7 +459,7 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                   <Users className="h-5 w-5 mr-2 text-amber-600" />
-                  Today's Working Staff ({dashboardStats.activeStaff})
+                  Today's Working Staff ({todayWorkingStaff.length})
                 </h2>
                 <p className="text-sm text-gray-500">Active Staff</p>
               </div>
@@ -607,18 +477,18 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            {(staff.firstName || staff.first_name || 'U')[0]}{(staff.lastName || staff.last_name || '')[0]}
+                            {(staff.firstName || staff.first_name || staff.name || 'U')[0]}{(staff.lastName || staff.last_name || '')[0]}
                           </div>
                           <div>
                             <p className="font-semibold text-gray-800">
-                              {staff.firstName || staff.first_name} {staff.lastName || staff.last_name}
+                              {staff.firstName || staff.first_name || staff.name} {staff.lastName || staff.last_name}
                             </p>
                             <p className="text-sm text-amber-600">{staff.position || staff.role}</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
-                            {staff.status || 'Active'}
+                            Active
                           </span>
                         </div>
                       </div>
@@ -631,19 +501,14 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
                             staff.skills.map((skill: any, skillIndex: number) => (
                               <span 
                                 key={skillIndex}
-                                className={`text-xs px-2 py-1 rounded-full border ${
-                                  skill.isPrimary 
-                                    ? 'bg-purple-100 text-purple-700 border-purple-200' 
-                                    : 'bg-gray-100 text-gray-600 border-gray-200'
-                                }`}
+                                className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200"
                               >
-                                {skill.serviceName} 
-                                {skill.isPrimary && ' ⭐'}
+                                {skill.name} 
                               </span>
                             ))
                           ) : (
                             <div className="flex flex-wrap gap-1">
-                              {(staff.specialties || ['Nail Care', 'Manicure']).map((specialty: string, specIndex: number) => (
+                              {['Nail Care', 'Manicure'].map((specialty: string, specIndex: number) => (
                                 <span key={specIndex} className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
                                   {specialty}
                                 </span>
@@ -697,10 +562,6 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
 
         <TabsContent value="inquiries" className="space-y-6">
           <CustomerInquiries />
-        </TabsContent>
-
-        <TabsContent value="images" className="space-y-6">
-          <ImageManagementInterface />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">

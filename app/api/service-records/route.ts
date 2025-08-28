@@ -59,7 +59,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const result = await db.insert(treatments).values(body).returning()
+    const result = await db.insert(serviceRecords).values(body).returning()
     return NextResponse.json(result[0])
   } catch (error) {
     console.error('Error creating service record:', error)

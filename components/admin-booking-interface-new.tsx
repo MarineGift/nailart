@@ -86,34 +86,20 @@ export function AdminBookingInterface() {
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [notes, setNotes] = useState('')
   const [editMode, setEditMode] = useState(false)
-  const [bookingMethod, setBookingMethod] = useState('Call')
+  const [bookingMethod, setBookingMethod] = useState('Phone')
   const [foundCustomer, setFoundCustomer] = useState<Customer | null>(null)
-  const [discountRate, setDiscountRate] = useState(0)
 
   const { toast } = useToast()
 
   const timeSlots = [
     '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
     '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
+    '16:00', '16:30', '17:00', '17:30', '18:00'
   ]
 
   useEffect(() => {
     fetchData()
-    fetchDiscountRate()
   }, [selectedDate])
-
-  const fetchDiscountRate = async () => {
-    try {
-      const response = await fetch('/api/settings/discount')
-      if (response.ok) {
-        const data = await response.json()
-        setDiscountRate(data.discountRate || 0)
-      }
-    } catch (error) {
-      console.error('Error fetching discount rate:', error)
-    }
-  }
 
   const fetchData = async () => {
     try {
@@ -682,60 +668,55 @@ export function AdminBookingInterface() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Name field - left aligned */}
             <div>
-              <Label htmlFor="name" className="text-left">Name {foundCustomer && <span className="text-xs text-green-600">(Found: {foundCustomer.firstName} {foundCustomer.lastName})</span>}</Label>
+              <Label htmlFor="phone">Customer Phone</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="phone"
+                  value={customerPhone}
+                  onChange={(e) => {
+                    setCustomerPhone(e.target.value)
+                    if (e.target.value.length >= 10) {
+                      searchCustomer(e.target.value)
+                    }
+                  }}
+                  placeholder="010-1234-5678"
+                  data-testid="input-customer-phone"
+                />
+                <Button 
+                  variant="outline" 
+                  onClick={() => searchCustomer(customerPhone)}
+                  data-testid="button-search-customer"
+                >
+                  Search
+                </Button>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="bookingMethod" className="text-sm font-medium">Booking Method</Label>
+              <div className="flex gap-2 items-center">
+                <Select value={bookingMethod} onValueChange={setBookingMethod}>
+                  <SelectTrigger className="w-[140px] h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Phone">Phone</SelectItem>
+                    <SelectItem value="Walk-in">Walk-in</SelectItem>
+                    <SelectItem value="Rebooking">Rebooking</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-xs text-gray-500">via</span>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="name">Customer Name {foundCustomer && <span className="text-xs text-green-600">(Found: {foundCustomer.firstName} {foundCustomer.lastName})</span>}</Label>
               <Input
                 id="name"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Enter customer name"
-                className="text-left"
+                placeholder="Enter last name"
                 data-testid="input-customer-name"
               />
-            </div>
-            
-            {/* Phone and Source fields side by side */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="phone" className="text-left">Phone</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="phone"
-                    value={customerPhone}
-                    onChange={(e) => {
-                      setCustomerPhone(e.target.value)
-                      if (e.target.value.length >= 10) {
-                        searchCustomer(e.target.value)
-                      }
-                    }}
-                    placeholder="(123) 456-7890"
-                    className="text-left"
-                    data-testid="input-customer-phone"
-                  />
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => searchCustomer(customerPhone)}
-                    data-testid="button-search-customer"
-                  >
-                    🔍
-                  </Button>
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="bookingMethod" className="text-left">Source</Label>
-                <Select value={bookingMethod} onValueChange={setBookingMethod}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select source" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Call">Call</SelectItem>
-                    <SelectItem value="Visit">Visit</SelectItem>
-                    <SelectItem value="Rebooking">Rebooking</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
             <div>
               <Label htmlFor="email">Customer Email</Label>
@@ -793,30 +774,12 @@ export function AdminBookingInterface() {
                       ) : null
                     })}
                     <div className="border-t pt-1 flex justify-between font-medium text-blue-800">
-                      <span>Subtotal:</span>
+                      <span>Total:</span>
                       <span>
                         ${selectedServices.reduce((total, serviceId) => {
                           const service = services.find(s => s.id.toString() === serviceId)
                           return total + (service?.price || 0)
                         }, 0) / 100}
-                      </span>
-                    </div>
-                    {discountRate > 0 && (
-                      <div className="flex justify-between text-sm text-blue-700">
-                        <span>Discount ({discountRate}%):</span>
-                        <span>-${(selectedServices.reduce((total, serviceId) => {
-                          const service = services.find(s => s.id.toString() === serviceId)
-                          return total + (service?.price || 0)
-                        }, 0) * discountRate / 10000).toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between font-bold text-blue-900 text-base">
-                      <span>Final Total:</span>
-                      <span>
-                        ${(selectedServices.reduce((total, serviceId) => {
-                          const service = services.find(s => s.id.toString() === serviceId)
-                          return total + (service?.price || 0)
-                        }, 0) * (100 - discountRate) / 10000).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -913,30 +876,12 @@ export function AdminBookingInterface() {
                             ) : null
                           })}
                           <div className="border-t pt-1 flex justify-between font-medium text-blue-800">
-                            <span>Subtotal:</span>
+                            <span>Total:</span>
                             <span>
                               ${selectedServices.reduce((total, serviceId) => {
                                 const service = services.find(s => s.id.toString() === serviceId)
                                 return total + (service?.price || 0)
                               }, 0) / 100}
-                            </span>
-                          </div>
-                          {discountRate > 0 && (
-                            <div className="flex justify-between text-sm text-blue-700">
-                              <span>Discount ({discountRate}%):</span>
-                              <span>-${(selectedServices.reduce((total, serviceId) => {
-                                const service = services.find(s => s.id.toString() === serviceId)
-                                return total + (service?.price || 0)
-                              }, 0) * discountRate / 10000).toFixed(2)}</span>
-                            </div>
-                          )}
-                          <div className="border-t pt-1 flex justify-between font-bold text-blue-900">
-                            <span>Final Total:</span>
-                            <span>
-                              ${(selectedServices.reduce((total, serviceId) => {
-                                const service = services.find(s => s.id.toString() === serviceId)
-                                return total + (service?.price || 0)
-                              }, 0) * (100 - discountRate) / 10000).toFixed(2)}
                             </span>
                           </div>
                         </div>

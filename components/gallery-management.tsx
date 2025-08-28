@@ -264,7 +264,7 @@ export function GalleryManagement({ currentUser }: GalleryManagementProps) {
             <CardTitle className="text-sm font-medium text-gray-600">Total Images</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{Array.isArray(galleryItems) ? galleryItems.length : 0}</div>
+            <div className="text-2xl font-bold text-purple-600">{galleryItems.length}</div>
           </CardContent>
         </Card>
         
@@ -274,7 +274,7 @@ export function GalleryManagement({ currentUser }: GalleryManagementProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
-              {Array.isArray(galleryItems) ? galleryItems.filter(item => item.is_featured).length : 0}
+              {galleryItems.filter(item => item.is_featured).length}
             </div>
           </CardContent>
         </Card>
@@ -285,7 +285,7 @@ export function GalleryManagement({ currentUser }: GalleryManagementProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
-              {Array.isArray(galleryItems) ? new Set(galleryItems.map(item => item.category)).size : 0}
+              {new Set(galleryItems.map(item => item.category)).size}
             </div>
           </CardContent>
         </Card>
@@ -306,7 +306,7 @@ export function GalleryManagement({ currentUser }: GalleryManagementProps) {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {Array.isArray(galleryItems) && galleryItems.map((item) => (
+              {galleryItems.map((item) => (
                 <div key={item.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="aspect-square mb-3 rounded-lg overflow-hidden bg-gray-100">
                     <Image

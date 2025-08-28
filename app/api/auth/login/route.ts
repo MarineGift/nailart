@@ -9,9 +9,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Staff ID is required' }, { status: 400 })
     }
 
-    // Find employee by staff ID (using existing staff table)
+    // Find employee by staff ID (using existing employees table)
     const { data: employee, error } = await supabase
-      .from('staff')
+      .from('employees')
       .select('id, first_name, last_name, email, role, position, status')
       .eq('id', staffId)
       .single()

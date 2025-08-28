@@ -209,7 +209,7 @@ export default function GalleryPage() {
             <div className="relative z-10 flex items-center justify-center h-full text-center px-8">
               <div>
                 <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
-                  💅 Nail Art Gallery
+                  Nail Art Gallery
                 </h1>
                 <p className="text-xl text-white/90 drop-shadow-md max-w-2xl mx-auto">
                   Browse our professional nail art designs and choose your preferred style

@@ -16,42 +16,8 @@ export async function GET(request: NextRequest) {
       .select('*')
 
     if (phoneNumber) {
-      // Format phone number for multiple search patterns
-      const cleanPhone = phoneNumber.replace(/\D/g, '') // Extract digits only
-      const formattedPhone = cleanPhone.length === 10 ? 
-        `(${cleanPhone.slice(0,3)}) ${cleanPhone.slice(3,6)}-${cleanPhone.slice(6)}` : 
-        phoneNumber
-      
-      console.log(`🔍 Searching phone: original="${phoneNumber}", clean="${cleanPhone}", formatted="${formattedPhone}"`)
-      
-      // Search using multiple approaches - first try exact matches, then partial
-      const { data: exactMatch, error: exactError } = await supabase
-        .from('customers')
-        .select('*')
-        .in('phone_raw', [phoneNumber, cleanPhone, formattedPhone])
-        .order('created_at', { ascending: false })
-      
-      if (exactError) {
-        console.error('Exact match error:', exactError)
-      } else if (exactMatch && exactMatch.length > 0) {
-        console.log(`✅ Found ${exactMatch.length} customers from Supabase (exact match)`)
-        return NextResponse.json(exactMatch)
-      }
-      
-      // If no exact match, try partial match
-      const { data: partialMatch, error: partialError } = await supabase
-        .from('customers')
-        .select('*')
-        .ilike('phone_raw', `%${cleanPhone}%`)
-        .order('created_at', { ascending: false })
-        
-      if (partialError) {
-        console.error('Partial match error:', partialError)
-        return NextResponse.json([])
-      } else {
-        console.log(`✅ Found ${partialMatch?.length || 0} customers from Supabase (partial match)`)
-        return NextResponse.json(partialMatch || [])
-      }
+      // Use phone_raw column
+      query = query.eq('phone_raw', phoneNumber)
     }
 
     const { data: customers, error } = await query

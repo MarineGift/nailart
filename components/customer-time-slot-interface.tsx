@@ -133,7 +133,7 @@ export function CustomerTimeSlotInterface({ selectedDate }: CustomerTimeSlotInte
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
         
         // Find employees working at this time
-        const availableEmployees = employeesList.filter(staff => {
+        const availableEmployees = staffsList.filter(staff => {
           const workStart = staff.workingStartTime || '10:00'
           const workEnd = staff.workingEndTime || '18:00'
           const currentTime = `${hour}:${minute.toString().padStart(2, '0')}`

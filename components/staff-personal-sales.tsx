@@ -129,20 +129,20 @@ export function StaffPersonalSales() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            개인매출 분석
+            Personal Sales Analysis
           </CardTitle>
           <CardDescription>
-            직원별 일일/월별/기간별 매출 및 고객 서비스 내역 분석
+            Daily/monthly/period sales and customer service history analysis by staff member
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Staff Selection */}
             <div>
-              <label className="text-sm font-medium mb-2 block">직원 선택</label>
+              <label className="text-sm font-medium mb-2 block">Select Staff</label>
               <Select value={selectedStaff} onValueChange={setSelectedStaff}>
                 <SelectTrigger>
-                  <SelectValue placeholder="직원 선택" />
+                  <SelectValue placeholder="Select Staff" />
                 </SelectTrigger>
                 <SelectContent>
                   {staffList.map((staff) => (
@@ -156,16 +156,16 @@ export function StaffPersonalSales() {
 
             {/* Search Period */}
             <div>
-              <label className="text-sm font-medium mb-2 block">검색 기간</label>
+              <label className="text-sm font-medium mb-2 block">Search Period</label>
               <Select value={searchPeriod} onValueChange={(value: 'daily' | 'monthly' | 'range' | 'annual') => setSearchPeriod(value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="daily">일별</SelectItem>
-                  <SelectItem value="monthly">월별</SelectItem>
-                  <SelectItem value="range">기간별</SelectItem>
-                  <SelectItem value="annual">연간</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="range">Date Range</SelectItem>
+                  <SelectItem value="annual">Annual</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -173,7 +173,7 @@ export function StaffPersonalSales() {
             {/* Date Selection */}
             <div>
               <label className="text-sm font-medium mb-2 block">
-                {searchPeriod === 'daily' ? '날짜 선택' : '시작 날짜'}
+                {searchPeriod === 'daily' ? 'Select Date' : 'Start Date'}
               </label>
               <Input
                 type="date"
@@ -185,7 +185,7 @@ export function StaffPersonalSales() {
             {/* Search Button */}
             <div className="flex items-end">
               <Button onClick={fetchSalesData} className="w-full">
-                검색
+                Search
               </Button>
             </div>
           </div>
@@ -199,7 +199,7 @@ export function StaffPersonalSales() {
             <div className="flex items-center gap-4">
               <DollarSign className="h-8 w-8 text-green-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">총 매출</p>
+                <p className="text-sm font-medium text-gray-600">Total Sales</p>
                 <p className="text-2xl font-bold">${calculateTotalSales().toFixed(2)}</p>
               </div>
             </div>
@@ -211,7 +211,7 @@ export function StaffPersonalSales() {
             <div className="flex items-center gap-4">
               <User className="h-8 w-8 text-blue-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">서비스 고객 수</p>
+                <p className="text-sm font-medium text-gray-600">Customers Served</p>
                 <p className="text-2xl font-bold">{salesRecords.length}</p>
               </div>
             </div>
@@ -223,11 +223,11 @@ export function StaffPersonalSales() {
             <div className="flex items-center gap-4">
               <Clock className="h-8 w-8 text-purple-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">평균 시술 시간</p>
+                <p className="text-sm font-medium text-gray-600">Average Treatment Time</p>
                 <p className="text-2xl font-bold">
                   {salesRecords.length > 0 
                     ? Math.round(salesRecords.reduce((sum, r) => sum + parseInt(r.treatment_time), 0) / salesRecords.length)
-                    : 0}분
+                    : 0} min
                 </p>
               </div>
             </div>
@@ -239,7 +239,7 @@ export function StaffPersonalSales() {
             <div className="flex items-center gap-4">
               <Star className="h-8 w-8 text-yellow-600" />
               <div>
-                <p className="text-sm font-medium text-gray-600">평균 만족도</p>
+                <p className="text-sm font-medium text-gray-600">Average Satisfaction</p>
                 <p className="text-2xl font-bold">{calculateAverageRating().toFixed(1)}/5</p>
               </div>
             </div>
@@ -250,9 +250,9 @@ export function StaffPersonalSales() {
       {/* Sales Records Table */}
       <Card>
         <CardHeader>
-          <CardTitle>고객 서비스 내역</CardTitle>
+          <CardTitle>Customer Service History</CardTitle>
           <CardDescription>
-            선택된 기간의 상세 서비스 기록
+            Detailed service records for the selected period
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -265,15 +265,15 @@ export function StaffPersonalSales() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>고객명</TableHead>
-                    <TableHead>부킹시간</TableHead>
-                    <TableHead>시술시간</TableHead>
-                    <TableHead>시술내역</TableHead>
-                    <TableHead>비용</TableHead>
+                    <TableHead>Customer Name</TableHead>
+                    <TableHead>Booking Time</TableHead>
+                    <TableHead>Treatment Time</TableHead>
+                    <TableHead>Treatment Details</TableHead>
+                    <TableHead>Cost</TableHead>
                     <TableHead>TIP</TableHead>
-                    <TableHead>결제방법</TableHead>
-                    <TableHead>재부킹</TableHead>
-                    <TableHead>만족도</TableHead>
+                    <TableHead>Payment Method</TableHead>
+                    <TableHead>Rebooking</TableHead>
+                    <TableHead>Satisfaction</TableHead>
                     <TableHead>Notes</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -282,12 +282,12 @@ export function StaffPersonalSales() {
                     <TableRow key={record.id}>
                       <TableCell className="font-medium">{record.customer_name}</TableCell>
                       <TableCell>{format(new Date(record.booking_time), 'MM/dd HH:mm')}</TableCell>
-                      <TableCell>{record.treatment_time}분</TableCell>
+                      <TableCell>{record.treatment_time} min</TableCell>
                       <TableCell className="max-w-xs truncate">{record.treatment_details}</TableCell>
                       <TableCell className="font-medium">${record.cost.toFixed(2)}</TableCell>
                       <TableCell>
                         <Badge variant={record.tip_included ? "default" : "secondary"}>
-                          {record.tip_included ? '포함' : '미포함'}
+                          {record.tip_included ? 'Included' : 'Not Included'}
                         </Badge>
                       </TableCell>
                       <TableCell>

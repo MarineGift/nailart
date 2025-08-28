@@ -26,14 +26,14 @@ interface WorkHistoryEntry {
 }
 
 const eventTypeLabels = {
-  hire: '입사',
-  resign: '퇴사',
-  vacation_start: '휴가 출발',
-  vacation_return: '휴가 복귀',
-  maternity_leave: '출산 휴가',
-  maternity_return: '출산 휴가 복귀',
-  marriage: '결혼',
-  return_from_abroad: '귀국'
+  hire: 'Hired',
+  resign: 'Resigned',
+  vacation_start: 'Vacation Start',
+  vacation_return: 'Vacation Return',
+  maternity_leave: 'Maternity Leave',
+  maternity_return: 'Maternity Return',
+  marriage: 'Marriage',
+  return_from_abroad: 'Return from Abroad'
 }
 
 const eventTypeColors = {
@@ -261,10 +261,10 @@ export function StaffWorkHistory() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Briefcase className="h-5 w-5" />
-                직원 근무정보 관리
+                Staff Work History Management
               </CardTitle>
               <CardDescription>
-                직원의 입사일, 휴가, 출산휴가, 귀국, 퇴사 등 근무 관련 히스토리 관리
+                Manage staff work-related history including hire dates, vacations, maternity leave, returns, and resignations
               </CardDescription>
             </div>
             <Dialog open={showAddDialog} onOpenChange={(open) => {
@@ -274,32 +274,32 @@ export function StaffWorkHistory() {
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  근무정보 추가
+                  Add Work Info
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
-                    {editingEntry ? '근무정보 수정' : '근무정보 추가'}
+                    {editingEntry ? 'Edit Work Info' : 'Add Work Info'}
                   </DialogTitle>
                   <DialogDescription>
-                    직원의 근무 관련 이벤트를 기록합니다.
+                    Record work-related events for staff members.
                   </DialogDescription>
                 </DialogHeader>
                 
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="staff_name">직원 이름 *</Label>
+                      <Label htmlFor="staff_name">Staff Name *</Label>
                       <Input
                         id="staff_name"
                         value={formData.staff_name}
                         onChange={(e) => setFormData(prev => ({ ...prev, staff_name: e.target.value }))}
-                        placeholder="직원 이름 입력"
+                        placeholder="Enter staff name"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="event_type">이벤트 유형</Label>
+                      <Label htmlFor="event_type">Event Type</Label>
                       <Select
                         value={formData.event_type}
                         onValueChange={(value: keyof typeof eventTypeLabels) => setFormData(prev => ({ ...prev, event_type: value }))}
@@ -317,7 +317,7 @@ export function StaffWorkHistory() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="event_date">날짜 *</Label>
+                      <Label htmlFor="event_date">Date *</Label>
                       <Input
                         id="event_date"
                         type="date"
@@ -326,22 +326,22 @@ export function StaffWorkHistory() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="input_person">입력자</Label>
+                      <Label htmlFor="input_person">Entered By</Label>
                       <Input
                         id="input_person"
                         value={formData.input_person}
                         onChange={(e) => setFormData(prev => ({ ...prev, input_person: e.target.value }))}
-                        placeholder="기록자 이름"
+                        placeholder="Recorder name"
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="notes">메모</Label>
+                    <Label htmlFor="notes">Notes</Label>
                     <Input
                       id="notes"
                       value={formData.notes}
                       onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                      placeholder="추가 정보나 메모"
+                      placeholder="Additional information or notes"
                     />
                   </div>
                 </div>
@@ -351,10 +351,10 @@ export function StaffWorkHistory() {
                     setShowAddDialog(false)
                     resetForm()
                   }}>
-                    취소
+                    Cancel
                   </Button>
                   <Button onClick={handleSave} disabled={loading}>
-                    {loading ? '저장 중...' : (editingEntry ? '수정' : '추가')}
+                    {loading ? 'Saving...' : (editingEntry ? 'Update' : 'Add')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -364,13 +364,13 @@ export function StaffWorkHistory() {
         <CardContent>
           <div className="flex items-center gap-4">
             <div>
-              <Label>직원 필터</Label>
+              <Label>Staff Filter</Label>
               <Select value={selectedStaff} onValueChange={setSelectedStaff}>
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="직원 선택" />
+                  <SelectValue placeholder="Select Staff" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">전체 직원</SelectItem>
+                  <SelectItem value="all">All Staff</SelectItem>
                   {staffList.map((staff) => (
                     <SelectItem key={staff.id} value={staff.id}>
                       {staff.name}
@@ -386,9 +386,9 @@ export function StaffWorkHistory() {
       {/* Work History Table */}
       <Card>
         <CardHeader>
-          <CardTitle>근무정보 히스토리</CardTitle>
+          <CardTitle>Work History</CardTitle>
           <CardDescription>
-            {selectedStaff === 'all' ? '전체 직원' : staffList.find(s => s.id === selectedStaff)?.name}의 근무 기록
+            Work records for {selectedStaff === 'all' ? 'all staff' : staffList.find(s => s.id === selectedStaff)?.name}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -396,20 +396,20 @@ export function StaffWorkHistory() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>직원명</TableHead>
-                  <TableHead>이벤트 유형</TableHead>
-                  <TableHead>날짜</TableHead>
-                  <TableHead>메모</TableHead>
-                  <TableHead>입력자</TableHead>
-                  <TableHead>입력일시</TableHead>
-                  <TableHead>작업</TableHead>
+                  <TableHead>Staff Name</TableHead>
+                  <TableHead>Event Type</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Notes</TableHead>
+                  <TableHead>Entered By</TableHead>
+                  <TableHead>Entry Date</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredHistory.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                      근무정보 기록이 없습니다.
+                      No work history records found.
                     </TableCell>
                   </TableRow>
                 ) : (

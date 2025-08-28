@@ -161,8 +161,8 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
   const saveTreatment = async () => {
     if (!selectedBooking || !assignedStaff) {
       toast({
-        title: '필수 정보 누락',
-        description: '예약과 담당 직원을 선택해주세요.',
+        title: 'Required Information Missing',
+        description: 'Please select booking and assigned staff.',
         variant: 'destructive'
       })
       return
@@ -209,8 +209,8 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
 
       if (response.ok) {
         toast({
-          title: '시술 정보 저장 완료',
-          description: '시술 내역이 성공적으로 저장되었습니다.'
+          title: 'Treatment Information Saved',
+          description: 'Treatment history has been successfully saved.'
         })
         // Reset form
         setSelectedBooking(null)
@@ -225,8 +225,8 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
     } catch (error) {
       console.error('Error saving treatment:', error)
       toast({
-        title: '저장 실패',
-        description: '시술 정보 저장 중 오류가 발생했습니다.',
+        title: 'Save Failed',
+        description: 'An error occurred while saving treatment information.',
         variant: 'destructive'
       })
     }
@@ -261,10 +261,10 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            시술 관리 - {format(selectedDate, 'yyyy년 MM월 dd일')}
+            Treatment Management - {format(selectedDate, 'MMM dd, yyyy')}
           </CardTitle>
           <CardDescription>
-            해당 날짜의 예약 고객들의 실제 시술 내용을 관리합니다
+            Manage actual treatment details for booked customers on the selected date
           </CardDescription>
         </CardHeader>
       </Card>
@@ -275,16 +275,16 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              예약 목록
+              Booking List
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {bookings.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">해당 날짜에 예약이 없습니다.</p>
+              <p className="text-gray-500 text-center py-8">No bookings for this date.</p>
             ) : (
               bookings.map((booking) => {
                 // Safe date parsing to avoid Invalid time value error
-                let bookingTime = '시간 미정'
+                let bookingTime = 'Time TBD'
                 try {
                   if (booking.booking_time) {
                     const date = new Date(booking.booking_time)
@@ -299,7 +299,7 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
                   console.error('Date parsing error:', error)
                 }
                 
-                const customerName = booking.notes?.match(/Name: ([^|]+)/)?.[1] || '고객명 없음'
+                const customerName = booking.notes?.match(/Name: ([^|]+)/)?.[1] || 'No Customer Name'
                 const customerPhone = booking.notes?.match(/Phone: ([^|]+)/)?.[1] || ''
                 
                 return (
@@ -336,7 +336,7 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
                         data-testid={`rebooking-${booking.id}`}
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
-                        리부킹
+                        Rebooking
                       </Button>
                     </div>
                   </div>
@@ -352,16 +352,16 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                시술 상세 정보
+                Treatment Details
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Staff Assignment */}
               <div>
-                <Label htmlFor="staff-select">담당 직원</Label>
+                <Label htmlFor="staff-select">Assigned Staff</Label>
                 <Select value={assignedStaff} onValueChange={setAssignedStaff}>
                   <SelectTrigger data-testid="staff-select">
-                    <SelectValue placeholder="담당 직원을 선택하세요" />
+                    <SelectValue placeholder="Select assigned staff" />
                   </SelectTrigger>
                   <SelectContent>
                     {staff.map((member) => (
@@ -382,17 +382,17 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
                   onChange={(e) => setIsDifferentCustomer(e.target.checked)}
                   data-testid="different-customer-checkbox"
                 />
-                <Label htmlFor="different-customer">실제 시술 받는 고객이 예약자와 다름</Label>
+                <Label htmlFor="different-customer">Actual customer is different from the booker</Label>
               </div>
 
               {/* New Customer Info */}
               {isDifferentCustomer && (
                 <div className="space-y-3 p-4 border rounded-lg bg-gray-50">
-                  <Label>실제 고객 정보</Label>
+                  <Label>Actual Customer Information</Label>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Input
-                        placeholder="이름"
+                        placeholder="Name"
                         value={newCustomerInfo.name}
                         onChange={(e) => setNewCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
                         data-testid="new-customer-name"
@@ -400,7 +400,7 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
                     </div>
                     <div>
                       <Input
-                        placeholder="전화번호"
+                        placeholder="Phone Number"
                         value={newCustomerInfo.phone}
                         onChange={(e) => setNewCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
                         data-testid="new-customer-phone"
@@ -408,7 +408,7 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
                     </div>
                     <div>
                       <Input
-                        placeholder="이메일 (선택)"
+                        placeholder="Email (optional)"
                         value={newCustomerInfo.email}
                         onChange={(e) => setNewCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
                         data-testid="new-customer-email"
@@ -420,13 +420,13 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
                         onValueChange={(value) => setNewCustomerInfo(prev => ({ ...prev, relationship: value }))}
                       >
                         <SelectTrigger data-testid="relationship-select">
-                          <SelectValue placeholder="관계" />
+                          <SelectValue placeholder="Relationship" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="family">가족</SelectItem>
-                          <SelectItem value="friend">친구</SelectItem>
-                          <SelectItem value="colleague">동료</SelectItem>
-                          <SelectItem value="other">기타</SelectItem>
+                          <SelectItem value="family">Family</SelectItem>
+                          <SelectItem value="friend">Friend</SelectItem>
+                          <SelectItem value="colleague">Colleague</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -436,7 +436,7 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
 
               {/* Service Selection */}
               <div className="space-y-3">
-                <Label>시술 서비스 (원래 예약 기반으로 수정 가능)</Label>
+                <Label>Treatment Services (modifiable based on original booking)</Label>
                 <div className="max-h-64 overflow-y-auto border rounded-lg p-3">
                   {Object.entries(groupedServices).map(([categoryName, categoryServices]) => (
                     <div key={categoryName} className="mb-4">
@@ -456,7 +456,7 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
                             <div className="flex justify-between items-center">
                               <div>
                                 <div className="font-medium text-sm">{service.name}</div>
-                                <div className="text-xs text-gray-500">{service.duration_min}분</div>
+                                <div className="text-xs text-gray-500">{service.duration_min} min</div>
                               </div>
                               <div className="text-sm font-medium">
                                 ${(service.base_price_cents / 100).toFixed(2)}
@@ -473,7 +473,7 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
               {/* Total Price */}
               <div className="p-3 bg-gray-50 rounded-lg">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">총 금액:</span>
+                  <span className="font-medium">Total Amount:</span>
                   <span className="font-bold text-lg">
                     ${(calculateTotalPrice() / 100).toFixed(2)}
                   </span>
@@ -482,10 +482,10 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
 
               {/* Treatment Notes */}
               <div>
-                <Label htmlFor="treatment-notes">시술 참고사항</Label>
+                <Label htmlFor="treatment-notes">Treatment Notes</Label>
                 <Textarea
                   id="treatment-notes"
-                  placeholder="시술 중 특이사항이나 고객 요청사항을 기록하세요..."
+                  placeholder="Record any special notes or customer requests during treatment..."
                   value={treatmentNotes}
                   onChange={(e) => setTreatmentNotes(e.target.value)}
                   data-testid="treatment-notes"
@@ -498,7 +498,7 @@ export function TreatmentManagement({ selectedDate }: TreatmentManagementProps) 
                 className="w-full"
                 data-testid="save-treatment"
               >
-                시술 정보 저장
+                Save Treatment Information
               </Button>
             </CardContent>
           </Card>

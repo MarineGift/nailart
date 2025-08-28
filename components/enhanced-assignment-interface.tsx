@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
-import { CalendarDays, Clock, ChevronLeft, ChevronRight, UserCheck, Plus, Calendar as CalendarIcon, Users, CheckCircle, Edit, Save, X, RefreshCw, Loader2, Phone, Star, Settings } from 'lucide-react'
+import { CalendarDays, Clock, ChevronLeft, ChevronRight, UserCheck, Plus, Calendar as CalendarIcon, Users, CheckCircle, Edit, Save, X, RefreshCw, Loader2 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ExpandedCalendar } from '@/components/expanded-calendar'
 import { format } from 'date-fns'
@@ -53,6 +53,7 @@ interface Staff {
 interface Booking {
   id: number
   booking_date: string
+  booking_time?: string
   time_slot: string
   status: string
   customer_id: number
@@ -60,6 +61,7 @@ interface Booking {
   staff_id?: string | null
   assigned_staff_id?: string | null
   created_by?: string | null
+  source?: string
   price: number
   duration: number
   notes?: string
@@ -96,21 +98,16 @@ export function EnhancedAssignmentInterface() {
   const [selectedService, setSelectedService] = useState('')
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [notes, setNotes] = useState('')
-  const [bookingSource, setBookingSource] = useState('Call')
+  const [bookingMethod, setBookingMethod] = useState('Phone')
   
   // Edit mode states
   const [isEditMode, setIsEditMode] = useState(false)
   const [editCustomerName, setEditCustomerName] = useState('')
   const [editCustomerPhone, setEditCustomerPhone] = useState('')
-  const [editService, setEditService] = useState('')
-  const [editSelectedServices, setEditSelectedServices] = useState<string[]>([])
+  const [editServices, setEditServices] = useState<string[]>([])  // Changed to array for multiple services
   const [editNotes, setEditNotes] = useState('')
   const [editTimeSlot, setEditTimeSlot] = useState('')
-  const [editBookingDate, setEditBookingDate] = useState<Date>(selectedDate)
-  const [editStaffId, setEditStaffId] = useState('')
-  const [editSource, setEditSource] = useState('Call')
-  const [customerLookupLoading, setCustomerLookupLoading] = useState(false)
-  const [availableStaffForDate, setAvailableStaffForDate] = useState<Staff[]>([])
+  const [editDate, setEditDate] = useState<Date>(new Date())  // Add date editing capability
   
   // Staff assignment states
   const [showStaffAssignDialog, setShowStaffAssignDialog] = useState(false)
@@ -126,80 +123,6 @@ export function EnhancedAssignmentInterface() {
   const [foundCustomer, setFoundCustomer] = useState<Customer | null>(null)
 
   const { toast } = useToast()
-
-  // Customer lookup function for edit mode
-  const lookupCustomerByPhone = async (phone: string) => {
-    if (!phone || phone.length < 14) return // Need complete (123) 456-7890 format
-    
-    setCustomerLookupLoading(true)
-    try {
-      const cleanPhone = phone.replace(/\D/g, '') // Remove non-digit characters
-      const response = await fetch(`/api/customers?phone=${encodeURIComponent(cleanPhone)}`)
-      const data = await response.json()
-      
-      if (data && data.length > 0) {
-        const customer = data[0]
-        const customerName = customer.name || customer.last_name || customer.first_name || ''
-        setEditCustomerName(customerName)
-        setFoundCustomer(customer) // Set found customer for existing customer flag
-        toast({
-          title: "기존 고객 확인",
-          description: `기존 고객: ${customerName}`,
-          variant: "default",
-        })
-      } else {
-        // No customer found - this is a new customer
-        setEditCustomerName('') // Clear name if no customer found
-        setFoundCustomer(null) // No customer found - this will be a new customer
-        toast({
-          title: "신규 고객",
-          description: "신규 고객입니다. 고객 정보를 입력한 후 저장하면 고객 등록과 함께 예약이 생성됩니다.",
-          variant: "default",
-        })
-      }
-    } catch (error) {
-      console.error('Error looking up customer:', error)
-    } finally {
-      setCustomerLookupLoading(false)
-    }
-  }
-
-  // Customer lookup function for new booking dialog
-  const lookupCustomerForBooking = async (phone: string) => {
-    if (!phone || phone.length < 14) return // Need complete (123) 456-7890 format
-    
-    setIsLookingUpCustomer(true)
-    try {
-      const cleanPhone = phone.replace(/\D/g, '') // Remove non-digit characters
-      const response = await fetch(`/api/customers?phone=${encodeURIComponent(cleanPhone)}`)
-      const data = await response.json()
-      
-      if (data && data.length > 0) {
-        const customer = data[0]
-        const customerName = customer.name || customer.last_name || customer.first_name || ''
-        setCustomerName(customerName) // Set the correct state for booking dialog
-        setFoundCustomer(customer) // Set found customer for existing customer flag
-        toast({
-          title: "기존 고객 확인",
-          description: `기존 고객: ${customerName}`,
-          variant: "default",
-        })
-      } else {
-        // No customer found - this is a new customer
-        setCustomerName('') // Clear name if no customer found
-        setFoundCustomer(null) // No customer found - this will be a new customer
-        toast({
-          title: "신규 고객",
-          description: "신규 고객입니다. 고객 정보를 입력한 후 저장하면 고객 등록과 함께 예약이 생성됩니다.",
-          variant: "default",
-        })
-      }
-    } catch (error) {
-      console.error('Error looking up customer for booking:', error)
-    } finally {
-      setIsLookingUpCustomer(false)
-    }
-  }
 
   // Phone number formatting function
   const formatPhoneNumber = (value: string) => {
@@ -220,19 +143,42 @@ export function EnhancedAssignmentInterface() {
     return limited
   }
 
+  // Customer lookup function
+  const lookupCustomerByPhone = async (phoneNumber: string) => {
+    if (!phoneNumber || phoneNumber.length < 14) return // Need at least (123) 456-7890 format
+    
+    setIsLookingUpCustomer(true)
+    try {
+      const response = await fetch('/api/customers')
+      if (response.ok) {
+        const allCustomers = await response.json()
+        const cleanedInput = phoneNumber.replace(/\D/g, '')
+        
+        const customer = allCustomers.find((c: Customer) => {
+          const customerPhone = (c.phone_number || '').replace(/\D/g, '')
+          return customerPhone === cleanedInput
+        })
+        
+        if (customer) {
+          setFoundCustomer(customer)
+          setCustomerName(`${customer.first_name || ''} ${customer.last_name || ''}`.trim())
+        } else {
+          setFoundCustomer(null)
+          setCustomerName('')
+        }
+      }
+    } catch (error) {
+      console.error('Error looking up customer:', error)
+    } finally {
+      setIsLookingUpCustomer(false)
+    }
+  }
 
   const timeSlots = [
     '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
     '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
+    '16:00', '16:30', '17:00', '17:30', '18:00'
   ]
-
-  // Initialize available staff when staff data is loaded
-  useEffect(() => {
-    if (staff.length > 0) {
-      setAvailableStaffForDate(staff)
-    }
-  }, [staff])
 
   useEffect(() => {
     fetchData()
@@ -295,12 +241,12 @@ export function EnhancedAssignmentInterface() {
             // Map API data structure to component interface
             const mappedStaffData = staffData.map((staff: any) => ({
               id: staff.id,
-              firstName: staff.firstName || staff.first_name || '',
-              lastName: staff.lastName || staff.last_name || '',
-              position: staff.role || staff.position || 'Staff',
+              firstName: staff.firstName || '',
+              lastName: staff.lastName || '',
+              position: staff.position || 'Staff',
               specialties: staff.specialties || ['Nail Care'],
-              workingStartTime: staff.working_hours?.start || staff.workingStartTime || '10:00',
-              workingEndTime: staff.working_hours?.end || staff.workingEndTime || '19:00',
+              workingStartTime: staff.workingStartTime || '10:00',
+              workingEndTime: staff.workingEndTime || '19:00',
               phone: staff.phone || '',
               email: staff.email || ''
             }))
@@ -339,13 +285,21 @@ export function EnhancedAssignmentInterface() {
             // Extract time directly from UTC string to avoid timezone conversion
             booking.booking_time.split('T')[1]?.substring(0, 5) || null : null
           
-          const customerName = booking.notes ? 
-            booking.notes.match(/Name: ([^|]+)/)?.[1]?.trim() || null : null
+          // Use customer data from joined customers table first, fallback to notes parsing
+          const customerName = booking.customers?.last_name || 
+                              booking.customers?.name ||
+                              (booking.customers?.first_name && booking.customers?.last_name 
+                                ? `${booking.customers.first_name} ${booking.customers.last_name}` 
+                                : '') ||
+                              (booking.notes ? booking.notes.match(/Name: ([^|]+)/)?.[1]?.trim() : null) || 
+                              'Unknown'
           
-          const customerPhone = booking.notes ? 
-            booking.notes.match(/Phone: ([^|]+)/)?.[1]?.trim() || null : null
+          const customerPhone = booking.customers?.phone_raw || 
+                               booking.customers?.phone_number ||
+                               (booking.notes ? booking.notes.match(/Phone: ([^|]+)/)?.[1]?.trim() : null) || 
+                               ''
 
-          console.log(`Mapping booking ${booking.id}: time_slot=${timeSlot}, customer_name=${customerName}`)
+          console.log(`Mapping booking ${booking.id}: time_slot=${timeSlot}, customer_name=${customerName}, phone=${customerPhone}`)
           
           return {
             ...booking,
@@ -413,8 +367,27 @@ export function EnhancedAssignmentInterface() {
     setHasNewData(false)
   }
 
+  // 직원이 특정 날짜에 근무하는지 확인 (일주일에 2일만 근무)
+  const isStaffWorkingOnDate = (staff: Staff, date: Date): boolean => {
+    // 간단한 해시 함수로 직원별로 일관된 근무 패턴 생성
+    const staffHash = staff.id.split('').reduce((a: number, b: string) => a + b.charCodeAt(0), 0);
+    const dayOfWeek = date.getDay(); // 0=일요일, 1=월요일, ... 6=토요일
+    
+    // 각 직원마다 고유한 2일 근무 패턴 생성 (월-금 중에서)
+    const workDays = [(staffHash % 5) + 1, ((staffHash + 2) % 5) + 1]; // 1~5 (월~금)
+    
+    console.log(`Staff ${staff.firstName} ${staff.lastName} (${staff.id.substring(0, 8)}): workDays=${workDays}, today=${dayOfWeek}, working=${workDays.includes(dayOfWeek)}`);
+    
+    return workDays.includes(dayOfWeek);
+  }
+
   // Check if staff is working at specific time
   const isStaffWorking = (staff: Staff, timeSlot: string): boolean => {
+    // 먼저 해당 날짜에 근무하는지 확인
+    if (!isStaffWorkingOnDate(staff, selectedDate)) {
+      return false;
+    }
+    
     if (!staff.workingStartTime || !staff.workingEndTime || !timeSlot) {
       return true // Default to working if no schedule data
     }
@@ -423,26 +396,15 @@ export function EnhancedAssignmentInterface() {
     const startTime = parseInt(staff.workingStartTime.toString().replace(':', ''))
     const endTime = parseInt(staff.workingEndTime.toString().replace(':', ''))
     
-    return slotTime >= startTime && slotTime < endTime
+    return slotTime >= startTime && slotTime <= endTime
   }
 
   // Get booking for specific staff and time slot
   const getBookingForSlot = (staffId: string, timeSlot: string) => {
-    // First check if there's any booking for this specific staff at this time
-    const staffBooking = bookings.find(b => 
+    return bookings.find(b => 
       (b.staff_id === staffId || b.assigned_staff_id === staffId || b.created_by === staffId) && 
       b.time_slot === timeSlot
     )
-    
-    if (staffBooking) return staffBooking
-    
-    // Also check if there's any unassigned booking at this time slot
-    const unassignedBooking = bookings.find(b => 
-      (!b.staff_id && !b.assigned_staff_id && !b.created_by) &&
-      b.time_slot === timeSlot
-    )
-    
-    return unassignedBooking
   }
 
   // Reset form when dialog opens
@@ -451,7 +413,7 @@ export function EnhancedAssignmentInterface() {
     setCustomerPhone('')
     setSelectedServices([])
     setNotes('')
-    setBookingSource('Call')
+    setBookingMethod('Phone')
     setFoundCustomer(null)
     setIsLookingUpCustomer(false)
   }
@@ -468,37 +430,14 @@ export function EnhancedAssignmentInterface() {
       return
     }
     
-    const staffMember = staff.find(s => s.id === staffId)
-    console.log('🎯 Y button clicked:', { 
-      staffId, 
-      timeSlot, 
-      staffName: staffMember ? `${staffMember.firstName} ${staffMember.lastName}` : 'Unknown',
-      staff: staffMember 
-    })
-    
     setSelectedStaff(staffId)
     setSelectedTimeSlot(timeSlot)
-    console.log('🎯 Selected staff state set to:', staffId)
     resetBookingForm()
-    
-    // Auto-populate phone if available from existing bookings
-    const existingBooking = bookings.find(b => 
-      (b.staff_id === staffId || b.assigned_staff_id === staffId || b.created_by === staffId) && 
-      b.time_slot === timeSlot
-    )
-    
-    if (existingBooking && existingBooking.customer_phone) {
-      setCustomerPhone(existingBooking.customer_phone)
-      // Auto-lookup customer when phone is pre-filled
-      setTimeout(() => lookupCustomerByPhone(existingBooking.customer_phone), 100)
-    }
-    
     setShowBookingDialog(true)
   }
 
   // Handle N button click (view/edit existing booking)
-  const handleNClick = (staffId: string, timeSlot: string) => {
-    const booking = getBookingForSlot(staffId, timeSlot)
+  const handleNClick = (booking: Booking) => {
     if (!booking) {
       toast({
         title: "No Booking Found",
@@ -509,45 +448,32 @@ export function EnhancedAssignmentInterface() {
     }
     
     setSelectedBooking(booking)
-    setSelectedStaff(staffId)
+    setSelectedStaff(booking.staff_id || booking.assigned_staff_id || booking.created_by || '')
+    setSelectedTimeSlot(booking.time_slot)
     setIsEditMode(false)
     
     // Set edit form values with detailed customer info
     const customer = customers.find(c => c.id === booking.customer_id)
-    const service = services.find(s => s.id === booking.service_id)
-    const assignedStaff = staff.find(s => s.id === (booking.staff_id || booking.created_by))
     
-    // Get customer info from booking or customer data
+    // Use booking data first, then fallback to customer data
     const customerName = booking.customer_name || 
-                        booking.customers?.last_name || 
-                        booking.customers?.name ||
                         customer?.name || 
+                        customer?.last_name ||
                         (customer?.first_name && customer?.last_name 
                           ? `${customer.first_name} ${customer.last_name}` 
-                          : '')
-    
+                          : '') || ''
     const customerPhone = booking.customer_phone || 
-                         booking.customers?.phone_raw ||
                          customer?.phone_number || 
                          customer?.phone_raw || ''
     
-    console.log('Setting booking info:', {
-      customerName,
-      customerPhone,
-      booking: booking
-    })
-    
     setEditCustomerName(customerName)
-    setEditCustomerPhone(formatPhoneNumber(customerPhone))
-    // Set the found customer for proper new customer detection
-    setFoundCustomer(customer || booking.customers || null)
-    setEditService(booking.service_id?.toString() || '')
-    setEditSelectedServices(booking.service_ids || [])
+    setEditCustomerPhone(customerPhone)
+    // Handle existing service - convert to array format
+    const existingServices = booking.service_id ? [booking.service_id.toString()] : []
+    setEditServices(existingServices)
     setEditNotes(booking.notes || '')
     setEditTimeSlot(booking.time_slot)
-    setEditBookingDate(new Date(booking.booking_time || selectedDate))
-    setEditStaffId(booking.staff_id || 'unassigned')
-    setEditSource('Call') // Always set source to "Call" by default
+    setEditDate(selectedDate)  // Initialize with current selected date
     
     setShowViewDialog(true)
   }
@@ -564,27 +490,30 @@ export function EnhancedAssignmentInterface() {
     }
 
     try {
-      // Format date and time for backend API
-      const appointmentDate = selectedDate.toISOString().split('T')[0] // YYYY-MM-DD format
-      const appointmentTime = selectedTimeSlot // HH:MM format
+      // Use the first selected service as the primary service
+      const primaryServiceId = selectedServices[0]
+      const selectedServiceData = services.find(s => s.id.toString() === primaryServiceId)
       
-      // Convert service IDs to integers
-      const serviceIds = selectedServices.map(id => parseInt(id))
+      // Calculate total price from all selected services
+      const totalPrice = selectedServices.reduce((total, serviceId) => {
+        const service = services.find(s => s.id.toString() === serviceId)
+        return total + (service?.base_price_cents || (service?.price ? service.price * 100 : 0))
+      }, 0)
       
       const bookingData = {
-        customer_id: null, // Will auto-create if needed
-        customer_name: customerName,
-        customer_phone: customerPhone,
-        appointment_date: appointmentDate,
-        appointment_time: appointmentTime,
-        service_ids: serviceIds,
-        notes: notes || `Customer: ${customerName}, Phone: ${customerPhone}`,
-        source: bookingSource, // Use selected source value
-        staff_id: selectedStaff
+        customerId: null, // Will be created if customer doesn't exist
+        serviceId: parseInt(primaryServiceId),
+        staffId: selectedStaff,
+        bookingDate: selectedDate.toISOString(),
+        timeSlot: selectedTimeSlot,
+        status: 'confirmed',
+        price: totalPrice,
+        duration: selectedServiceData?.duration_min || selectedServiceData?.duration || 60,
+        notes: notes,
+        customerName: customerName,
+        customerPhone: customerPhone,
+        selected_services: selectedServices.map(id => parseInt(id)) // Store all selected services
       }
-
-      console.log('📝 Submitting booking data:', bookingData)
-      console.log('🎯 Staff ID being sent:', selectedStaff)
 
       const response = await fetch('/api/bookings', {
         method: 'POST',
@@ -593,8 +522,6 @@ export function EnhancedAssignmentInterface() {
       })
 
       if (response.ok) {
-        const result = await response.json()
-        console.log('✅ Booking created successfully:', result)
         toast({
           title: "Success",
           description: "Booking created successfully",
@@ -602,9 +529,7 @@ export function EnhancedAssignmentInterface() {
         setShowBookingDialog(false)
         fetchData() // Refresh data
       } else {
-        const errorData = await response.text()
-        console.error('❌ Booking creation failed:', errorData)
-        throw new Error(`Failed to create booking: ${response.status}`)
+        throw new Error('Failed to create booking')
       }
     } catch (error) {
       console.error('Error creating booking:', error)
@@ -681,56 +606,19 @@ export function EnhancedAssignmentInterface() {
 
   // Handle booking update
   const handleBookingUpdate = async () => {
-    if (!selectedBooking || !editCustomerName || !editCustomerPhone || !editService) {
+    if (!selectedBooking || !editCustomerName || !editCustomerPhone || editServices.length === 0) {
       toast({
         title: "Required Fields",
-        description: "All fields are required",
+        description: "Customer name, phone, and at least one service are required",
         variant: "destructive",
       })
       return
     }
 
     try {
-      let customerId = selectedBooking.customer_id
-      
-      // Check if this is a new customer (foundCustomer is null)
-      if (!foundCustomer) {
-        console.log('Creating new customer:', editCustomerName, editCustomerPhone)
-        
-        // Create new customer first
-        const cleanPhone = editCustomerPhone.replace(/\D/g, '') // Remove formatting
-        const customerData = {
-          name: editCustomerName,
-          last_name: editCustomerName, // Use name as last_name for consistency
-          phone_raw: editCustomerPhone, // Keep formatted version
-          phone_number: cleanPhone, // Store clean version for lookups
-          email: '',
-          is_vip: false
-        }
-        
-        const customerResponse = await fetch('/api/customers', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(customerData)
-        })
-        
-        if (customerResponse.ok) {
-          const newCustomer = await customerResponse.json()
-          customerId = newCustomer.id
-          console.log('New customer created with ID:', customerId)
-          
-          toast({
-            title: "신규고객 등록 완료",
-            description: `${editCustomerName}님이 신규고객으로 등록되었습니다.`,
-            variant: "default",
-          })
-        } else {
-          throw new Error('Failed to create new customer')
-        }
-      }
-
       const originalBooking = selectedBooking
-      const selectedServiceData = services.find(s => s.id.toString() === editService)
+      const primaryServiceId = editServices[0]
+      const selectedServiceData = services.find(s => s.id.toString() === primaryServiceId)
       
       // Create booking history record
       const historyData = {
@@ -754,38 +642,49 @@ export function EnhancedAssignmentInterface() {
         body: JSON.stringify(historyData)
       })
 
-      // Update booking with all fields including staff and source
+      // Update booking - if time slot changed, remove staff assignment
       const timeSlotChanged = originalBooking.time_slot !== editTimeSlot
-      const staffChanged = editStaffId !== originalBooking.staff_id
-      
       const updatedBookingData = {
         ...originalBooking,
-        customer_id: customerId, // Use the new or existing customer ID
-        customer_name: editCustomerName,
-        customer_phone: editCustomerPhone,
         time_slot: editTimeSlot,
-        service_id: parseInt(editService),
-        staff_id: editStaffId || null,
-        source: editSource,
+        service_id: parseInt(primaryServiceId),
+        selected_services: editServices.map(id => parseInt(id)),  // Store all selected services
+        // Update staff assignment - if time slot changed and new staff not selected, remove assignment
+        staff_id: selectedStaff || (timeSlotChanged ? null : originalBooking.staff_id),
+        created_by: selectedStaff || (timeSlotChanged ? null : originalBooking.created_by),
         price: selectedServiceData?.base_price_cents ? selectedServiceData.base_price_cents / 100 : originalBooking.price,
         duration: selectedServiceData?.duration_min || selectedServiceData?.duration || originalBooking.duration,
-        notes: editNotes
+        notes: editNotes,
+        // Update customer info as well
+        customer_name: editCustomerName,
+        customer_phone: editCustomerPhone
+      }
+
+      // Prepare API data with date update - only include fields that exist in database
+      const apiData = {
+        booking_date: editDate.toISOString().split('T')[0],
+        time_slot: editTimeSlot,
+        staff_id: selectedStaff || null,
+        notes: editNotes,
+        status: 'scheduled'
       }
 
       const response = await fetch(`/api/bookings/${originalBooking.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedBookingData)
+        body: JSON.stringify(apiData)
       })
 
       if (response.ok) {
         toast({
           title: "Success",
-          description: "Booking updated successfully with new time and staff assignment.",
+          description: timeSlotChanged 
+            ? "Booking updated successfully. Time change moved booking to unassigned list."
+            : "Booking updated successfully",
         })
         setShowViewDialog(false)
         setIsEditMode(false)
-        await fetchData() // Refresh data
+        fetchData() // Refresh data
       } else {
         throw new Error('Failed to update booking')
       }
@@ -827,16 +726,25 @@ export function EnhancedAssignmentInterface() {
     return matchesView && matchesSearch
   })
 
-  // Keep legacy unassignedBookings for compatibility
-  const unassignedBookings = bookings.filter(b => 
-    !b.staff_id && !b.created_by
-  )
 
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage)
   const paginatedBookings = filteredBookings.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   )
+
+  // 선택된 날짜에 근무하는 직원만 필터링
+  const workingStaff = staff.filter(s => isStaffWorkingOnDate(s, selectedDate))
+  
+  // Get unassigned bookings
+  const unassignedBookings = bookings.filter(b => !b.staff_id && !b.assigned_staff_id)
+  
+  // Get bookings by source
+  const homepageBookings = bookings.filter(b => b.source === 'Homepage')
+  const callBookings = bookings.filter(b => b.source === 'Call')
+  const walkinBookings = bookings.filter(b => b.source === 'Walk-in' || b.source === 'Visit')
+  const rebookingBookings = bookings.filter(b => b.source === 'Rebooking')
+  
 
   if (loading && staff.length === 0) {
     return (
@@ -905,7 +813,7 @@ export function EnhancedAssignmentInterface() {
                   <Users className="h-3 w-3 text-blue-500" />
                   Working Staff:
                 </span>
-                <span className="font-bold">{staff.length}</span>
+                <span className="font-bold">{workingStaff.length}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-1">
@@ -913,6 +821,25 @@ export function EnhancedAssignmentInterface() {
                   Total Bookings:
                 </span>
                 <span className="font-bold">{bookings.length}</span>
+              </div>
+              {/* Booking source breakdown */}
+              <div className="ml-4 space-y-1 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Homepage:</span>
+                  <span className="font-medium text-gray-800">{homepageBookings.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Call:</span>
+                  <span className="font-medium text-gray-800">{callBookings.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Walk-in:</span>
+                  <span className="font-medium text-gray-800">{walkinBookings.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Rebooking:</span>
+                  <span className="font-medium text-gray-800">{rebookingBookings.length}</span>
+                </div>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-1">
@@ -942,14 +869,14 @@ export function EnhancedAssignmentInterface() {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left p-2 font-medium">Time</th>
-                    {staff.map((staff) => (
+                    {workingStaff.map((staff) => (
                       <th key={staff.id} className="text-center p-2 font-medium min-w-[100px]">
                         <div className="space-y-1">
                           <div className="font-semibold text-sm">
-                            {staff.firstName} {staff.lastName}
+                            {(staff.firstName && staff.lastName) ? `${staff.firstName} ${staff.lastName}` : `Staff ${staff.id.substring(0, 8)}`}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {staff.position}
+                            {staff.position || 'Staff'}
                           </div>
                         </div>
                       </th>
@@ -960,18 +887,9 @@ export function EnhancedAssignmentInterface() {
                   {timeSlots.map((timeSlot) => (
                     <tr key={timeSlot} className="border-b hover:bg-gray-50">
                       <td className="p-2 font-medium">{timeSlot}</td>
-                      {staff.map((staff) => {
+                      {workingStaff.map((staff) => {
                         const booking = getBookingForSlot(staff.id, timeSlot)
-                        const isWorking = isStaffWorking(staff, timeSlot)
                         
-                        if (!isWorking) {
-                          return (
-                            <td key={staff.id} className="p-2 text-center">
-                              <span className="text-gray-400">-</span>
-                            </td>
-                          )
-                        }
-
                         return (
                           <td key={staff.id} className="p-2 text-center">
                             {booking ? (
@@ -979,7 +897,7 @@ export function EnhancedAssignmentInterface() {
                                 variant="destructive"
                                 size="sm"
                                 className="w-12 h-8 text-white font-bold"
-                                onClick={() => handleNClick(staff.id, timeSlot)}
+                                onClick={() => handleNClick(booking)}
                                 data-testid={`button-booking-${staff.id}-${timeSlot}`}
                               >
                                 N
@@ -1109,9 +1027,9 @@ export function EnhancedAssignmentInterface() {
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {booking.time_slot || 
-                             ((booking as any).booking_time ? 
+                             (booking.booking_time ? 
                                // Extract time directly from UTC string to avoid timezone conversion
-                               (booking as any).booking_time.split('T')[1]?.substring(0, 5) : 'Unknown Time')}
+                               booking.booking_time.split('T')[1]?.substring(0, 5) : 'Unknown Time')}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -1122,9 +1040,9 @@ export function EnhancedAssignmentInterface() {
                             <p className="text-xs text-gray-500">
                               {booking.customer_phone || customer?.phone_number || customer?.phone_raw || 'No phone'}
                             </p>
-                            {(booking.created_by || (booking as any).source) && (
+                            {(booking.created_by || booking.source) && (
                               <p className="text-xs text-purple-600 font-medium mt-1">
-                                🌐 Source: {(booking as any).source || booking.created_by}
+                                🌐 Source: {booking.source || booking.created_by}
                               </p>
                             )}
                           </div>
@@ -1210,7 +1128,8 @@ export function EnhancedAssignmentInterface() {
           <DialogHeader>
             <DialogTitle>Create New Booking</DialogTitle>
             <DialogDescription>
-              Staff: {staff.find(e => e.id === selectedStaff)?.firstName} {staff.find(e => e.id === selectedStaff)?.lastName} - Time: {selectedTimeSlot} on {format(selectedDate, 'MMMM dd, yyyy')}
+              Staff: {staff.find(e => e.id === selectedStaff)?.firstName} {staff.find(e => e.id === selectedStaff)?.lastName}<br/>
+              Time: {selectedTimeSlot} on {format(selectedDate, 'MMMM dd, yyyy')}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -1227,7 +1146,7 @@ export function EnhancedAssignmentInterface() {
                     
                     // Auto lookup customer when phone is complete
                     if (formatted.length === 14) { // (123) 456-7890 format
-                      lookupCustomerForBooking(formatted)
+                      lookupCustomerByPhone(formatted)
                     } else {
                       setFoundCustomer(null)
                       if (!foundCustomer) setCustomerName('') // Clear name only if no customer found
@@ -1263,6 +1182,24 @@ export function EnhancedAssignmentInterface() {
               </div>
             )}
             
+            {/* Source/Booking Method field */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="bookingMethod" className="text-right">Source</Label>
+              <div className="col-span-3 flex gap-2 items-center">
+                <Select value={bookingMethod} onValueChange={setBookingMethod}>
+                  <SelectTrigger className="w-[140px] h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Phone">Phone</SelectItem>
+                    <SelectItem value="Walk-in">Walk-in</SelectItem>
+                    <SelectItem value="Rebooking">Rebooking</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-xs text-gray-500">via</span>
+              </div>
+            </div>
+            
             {/* Name field second */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="customerName" className="text-right">Name</Label>
@@ -1276,39 +1213,6 @@ export function EnhancedAssignmentInterface() {
                 data-testid="input-customer-name"
               />
             </div>
-            
-            {/* Source field third */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="bookingSource" className="text-right">Source</Label>
-              <Select value={bookingSource} onValueChange={setBookingSource}>
-                <SelectTrigger className="col-span-3" data-testid="select-booking-source">
-                  <SelectValue placeholder="Select source" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Call">Call</SelectItem>
-                  <SelectItem value="Visit">Visit</SelectItem>
-                  <SelectItem value="Rebooking">Rebooking</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Customer lookup status */}
-            {foundCustomer && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <div></div>
-                <div className="col-span-3 text-sm text-green-600 flex items-center gap-1">
-                  ✓ Customer found: {foundCustomer.first_name} {foundCustomer.last_name}
-                </div>
-              </div>
-            )}
-            {customerPhone.length === 14 && !foundCustomer && !isLookingUpCustomer && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <div></div>
-                <div className="col-span-3 text-sm text-blue-600">
-                  New customer - please enter name below
-                </div>
-              </div>
-            )}
             <div className="space-y-3">
               <Label className="text-sm font-medium">Services</Label>
               <div className="border rounded-lg p-4 space-y-3 max-h-60 overflow-y-auto">
@@ -1392,15 +1296,15 @@ export function EnhancedAssignmentInterface() {
         </DialogContent>
       </Dialog>
 
-      {/* Enhanced View/Edit Booking Dialog */}
+      {/* View/Edit Booking Dialog (N button clicked) */}
       <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {isEditMode ? (
                 <>
                   <Edit className="h-4 w-4" />
-                  Edit Booking - Complete Modification
+                  Edit Booking
                 </>
               ) : (
                 <>
@@ -1410,119 +1314,153 @@ export function EnhancedAssignmentInterface() {
               )}
             </DialogTitle>
             <DialogDescription>
-              {isEditMode ? 'Modify all booking details including date, time, services, and customer information' : 
-              `Time: ${selectedBooking?.time_slot} on ${format(selectedDate, 'MMMM dd, yyyy')}`}
+              Time: {selectedBooking?.time_slot} on {format(selectedDate, 'MMMM dd, yyyy')}
             </DialogDescription>
-            {selectedBooking && !isEditMode && (
-              <div className="grid grid-cols-2 gap-2 mt-2 p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <strong>Status:</strong> {selectedBooking.status || 'Confirmed'}
-                </div>
-                <div>
-                  <strong>Duration:</strong> {selectedBooking.duration || 60} min
-                </div>
-                <div>
-                  <strong>Price:</strong> ${selectedBooking.price?.toFixed(2) || '0.00'}
-                </div>
-                <div>
+          </DialogHeader>
+          
+          {selectedBooking && (
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <span><strong>Status:</strong> {selectedBooking.status || 'Confirmed'}</span>
+                <span><strong>Duration:</strong> {selectedBooking.duration || 60} min</span>
+                <span><strong>Price:</strong> ${selectedBooking.price?.toFixed(2) || '0.00'}</span>
+                <span><strong>Source:</strong> {selectedBooking.source || 'Unknown'}</span>
+                <span className="col-span-2">
                   <strong>Assigned Staff:</strong>{' '}
                   {(() => {
                     const assignedStaff = staff.find(s => s.id === (selectedBooking.staff_id || selectedBooking.created_by))
                     return assignedStaff ? `${assignedStaff.firstName} ${assignedStaff.lastName}` : 'Unassigned'
                   })()}
-                </div>
+                </span>
               </div>
-            )}
-          </DialogHeader>
-          <div className="grid gap-6 py-4">
-            {/* Phone Field - Top Priority with Pastel Background */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right font-medium">📞 Phone</Label>
-              {isEditMode ? (
-                <div className="col-span-3 relative">
-                  <Input
-                    value={editCustomerPhone}
-                    onChange={(e) => {
-                      const formatted = formatPhoneNumber(e.target.value)
-                      setEditCustomerPhone(formatted)
-                      // Auto-lookup customer when phone is complete
-                      if (formatted.length === 14) {
-                        lookupCustomerByPhone(formatted)
-                      }
-                    }}
-                    className="bg-blue-50 border-blue-200 focus:bg-blue-100 focus:border-blue-300"
-                    placeholder="(123) 456-7890"
-                    data-testid="input-edit-customer-phone"
-                  />
-                  {customerLookupLoading && (
-                    <div className="absolute right-2 top-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="col-span-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded">{editCustomerPhone}</div>
-              )}
             </div>
-            
-            {/* Name Field */}
+          )}
+          
+          <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">👤 Name</Label>
+              <Label className="text-right">Name</Label>
               {isEditMode ? (
                 <Input
                   value={editCustomerName}
                   onChange={(e) => setEditCustomerName(e.target.value)}
                   className="col-span-3"
-                  placeholder="Customer name"
                   data-testid="input-edit-customer-name"
                 />
               ) : (
                 <div className="col-span-3 px-3 py-2 border rounded">{editCustomerName}</div>
               )}
             </div>
-            
-            {/* Date Selection */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">📅 Date</Label>
+              <Label className="text-right">Phone</Label>
               {isEditMode ? (
-                <div className="col-span-3">
-                  <input
-                    type="date"
-                    value={editBookingDate ? format(editBookingDate, 'yyyy-MM-dd') : ''}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        const newDate = new Date(e.target.value)
-                        setEditBookingDate(newDate)
-                        // Filter available staff based on selected date
-                        const workingStaff = staff.filter(s => {
-                          const dayOfWeek = newDate.getDay()
-                          // Assuming all staff work every day for now
-                          return true
-                        })
-                        setAvailableStaffForDate(workingStaff)
-                      }
-                    }}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    data-testid="input-edit-date"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    📅 Select new booking date
-                  </p>
+                <Input
+                  value={editCustomerPhone}
+                  onChange={(e) => setEditCustomerPhone(e.target.value)}
+                  className="col-span-3"
+                  data-testid="input-edit-customer-phone"
+                />
+              ) : (
+                <div className="col-span-3 px-3 py-2 border rounded">{editCustomerPhone}</div>
+              )}
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right pt-2">Services</Label>
+              {isEditMode ? (
+                <div className="col-span-3 space-y-3">
+                  <div className="max-h-48 overflow-y-auto border rounded-lg p-3">
+                    {services.map((service) => (
+                      <div key={service.id} className="flex items-center space-x-3 mb-2">
+                        <Checkbox
+                          id={`edit-service-${service.id}`}
+                          checked={editServices.includes(service.id.toString())}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setEditServices(prev => [...prev, service.id.toString()])
+                            } else {
+                              setEditServices(prev => prev.filter(id => id !== service.id.toString()))
+                            }
+                          }}
+                          data-testid={`checkbox-edit-service-${service.id}`}
+                        />
+                        <Label htmlFor={`edit-service-${service.id}`} className="flex-1 cursor-pointer text-sm">
+                          <div className="flex justify-between items-center">
+                            <span>{service.name}</span>
+                            <span className="text-green-600 font-medium">
+                              ${((service.base_price_cents || 0) / 100).toFixed(2)}
+                            </span>
+                          </div>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  {editServices.length > 0 && (
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <div className="text-sm font-medium text-blue-800 mb-2">Selected Services:</div>
+                      <div className="space-y-1">
+                        {editServices.map(serviceId => {
+                          const service = services.find(s => s.id.toString() === serviceId)
+                          return service ? (
+                            <div key={serviceId} className="flex justify-between text-sm">
+                              <span>{service.name}</span>
+                              <span>${((service.base_price_cents || 0) / 100).toFixed(2)}</span>
+                            </div>
+                          ) : null
+                        })}
+                        <div className="border-t pt-1 flex justify-between font-medium text-blue-800">
+                          <span>Total:</span>
+                          <span>
+                            ${editServices.reduce((total, serviceId) => {
+                              const service = services.find(s => s.id.toString() === serviceId)
+                              return total + (service?.base_price_cents || 0)
+                            }, 0) / 100}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="col-span-3 px-3 py-2 border rounded">
-                  {format(editBookingDate, 'MMMM dd, yyyy')}
+                  {editServices.length > 0 ? (
+                    <div className="space-y-1">
+                      {editServices.map(serviceId => {
+                        const service = services.find(s => s.id.toString() === serviceId)
+                        return service ? (
+                          <div key={serviceId} className="flex justify-between text-sm">
+                            <span>{service.name}</span>
+                            <span>${((service.base_price_cents || 0) / 100).toFixed(2)}</span>
+                          </div>
+                        ) : null
+                      })}
+                    </div>
+                  ) : (
+                    'No services selected'
+                  )}
                 </div>
               )}
             </div>
-            
-            {/* Time Selection */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">🕒 Time</Label>
+              <Label className="text-right">Date</Label>
+              {isEditMode ? (
+                <Input
+                  type="date"
+                  value={editDate.toISOString().split('T')[0]}
+                  onChange={(e) => setEditDate(new Date(e.target.value))}
+                  className="col-span-3"
+                  data-testid="input-edit-date"
+                />
+              ) : (
+                <div className="col-span-3 px-3 py-2 border rounded">
+                  {format(editDate, 'MMMM dd, yyyy (EEE)')}
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">Time</Label>
               {isEditMode ? (
                 <Select value={editTimeSlot} onValueChange={setEditTimeSlot}>
                   <SelectTrigger className="col-span-3" data-testid="select-edit-time">
-                    <SelectValue placeholder="Select time slot" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {timeSlots.map((slot) => (
@@ -1536,159 +1474,58 @@ export function EnhancedAssignmentInterface() {
                 <div className="col-span-3 px-3 py-2 border rounded">{editTimeSlot}</div>
               )}
             </div>
-            
-            {/* Staff Selection - Filtered by Selected Date */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">👩‍💼 Staff</Label>
+              <Label className="text-right">Assigned Staff</Label>
               {isEditMode ? (
-                <div className="col-span-3">
-                  <Select value={editStaffId} onValueChange={setEditStaffId}>
-                    <SelectTrigger data-testid="select-edit-staff">
-                      <SelectValue placeholder="Select staff member" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unassigned">Unassigned</SelectItem>
-                      {availableStaffForDate.map((staffMember) => {
-                        const isAvailable = editTimeSlot ? 
-                          isStaffWorking(staffMember, editTimeSlot) && 
-                          !getBookingForSlot(staffMember.id, editTimeSlot) : true
-                        
-                        return (
-                          <SelectItem 
-                            key={staffMember.id} 
-                            value={staffMember.id}
-                            disabled={!isAvailable}
-                            className={!isAvailable ? 'opacity-50' : ''}
-                          >
-                            <div className="flex items-center justify-between w-full">
-                              <span>{staffMember.firstName} {staffMember.lastName}</span>
-                              <span className="text-xs text-gray-500 ml-2">
-                                {staffMember.position}
-                                {!isAvailable && ' (Busy)'}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Showing staff available on {format(editBookingDate, 'MMM dd, yyyy')}
-                  </p>
-                </div>
-              ) : (
-                <div className="col-span-3 px-3 py-2 border rounded">
-                  {(() => {
-                    const assignedStaff = staff.find(s => s.id === editStaffId)
-                    return assignedStaff ? `${assignedStaff.firstName} ${assignedStaff.lastName}` : 'Unassigned'
-                  })()}
-                </div>
-              )}
-            </div>
-            
-            {/* Multiple Service Selection */}
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right pt-2">💅 Services</Label>
-              {isEditMode ? (
-                <div className="col-span-3 space-y-3">
-                  <div className="text-sm font-medium text-gray-700 mb-2">Select Multiple Services:</div>
-                  <div className="max-h-48 overflow-y-auto border rounded-md p-3 bg-gray-50">
-                    {services.map((service) => (
-                      <div key={service.id} className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded">
-                        <Checkbox
-                          id={`edit-service-${service.id}`}
-                          checked={editSelectedServices.includes(service.id.toString())}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setEditSelectedServices(prev => [...prev, service.id.toString()])
-                            } else {
-                              setEditSelectedServices(prev => prev.filter(id => id !== service.id.toString()))
-                            }
-                          }}
-                          data-testid={`checkbox-edit-service-${service.id}`}
-                        />
-                        <Label htmlFor={`edit-service-${service.id}`} className="flex-1 cursor-pointer">
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">{service.name}</span>
-                            <div className="text-right text-sm">
-                              <div className="font-semibold text-green-600">
-                                ${service.base_price_cents ? (service.base_price_cents / 100).toLocaleString() : '0'}
-                              </div>
-                              <div className="text-gray-500">{service.duration_min || 0} min</div>
-                            </div>
-                          </div>
-                          {service.description && (
-                            <div className="text-sm text-gray-600 mt-1">{service.description}</div>
-                          )}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                  {editSelectedServices.length > 0 && (
-                    <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                      <div className="text-sm font-medium text-blue-800 mb-2">Selected Services Summary:</div>
-                      <div className="space-y-1">
-                        {editSelectedServices.map(serviceId => {
-                          const service = services.find(s => s.id.toString() === serviceId)
-                          return service ? (
-                            <div key={serviceId} className="flex justify-between text-sm">
-                              <span>{service.name}</span>
-                              <span>${service.base_price_cents ? (service.base_price_cents / 100).toLocaleString() : '0'}</span>
-                            </div>
-                          ) : null
-                        })}
-                        <div className="border-t pt-1 flex justify-between font-medium text-blue-800">
-                          <span>Total:</span>
-                          <span>
-                            ${editSelectedServices.reduce((total, serviceId) => {
-                              const service = services.find(s => s.id.toString() === serviceId)
-                              return total + (service?.base_price_cents || 0)
-                            }, 0) / 100}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="col-span-3 px-3 py-2 border rounded">
-                  {services.find(s => s.id.toString() === editService)?.name || 'No service selected'}
-                </div>
-              )}
-            </div>
-            
-            {/* Source Selection - Default to Call */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">🌐 Source</Label>
-              {isEditMode ? (
-                <Select value={editSource} onValueChange={setEditSource}>
-                  <SelectTrigger className="col-span-3" data-testid="select-edit-source">
-                    <SelectValue placeholder="Select source" />
+                <Select value={selectedStaff} onValueChange={setSelectedStaff}>
+                  <SelectTrigger className="col-span-3" data-testid="select-edit-assigned-staff">
+                    <SelectValue placeholder="Select staff member" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Call">📞 Call</SelectItem>
-                    <SelectItem value="Visit">🚶 Visit</SelectItem>
-                    <SelectItem value="Rebooking">🔄 Rebooking</SelectItem>
+                    {staff.filter(staffMember => {
+                      // Filter to show only staff working on the selected edit date
+                      return isStaffWorkingOnDate(staffMember, editDate)
+                    }).map((staffMember) => {
+                      // Check if staff is available for this time slot
+                      const isAvailable = selectedBooking ? 
+                        (!getBookingForSlot(staffMember.id, selectedBooking.time_slot) || 
+                         staffMember.id === selectedBooking.staff_id) : true
+                      
+                      return (
+                        <SelectItem 
+                          key={staffMember.id} 
+                          value={staffMember.id}
+                          disabled={!isAvailable}
+                          className={!isAvailable ? 'opacity-50' : ''}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <span>{staffMember.firstName} {staffMember.lastName}</span>
+                            <span className="text-xs text-gray-500 ml-2">
+                              {staffMember.position}
+                              {!isAvailable && ' (Busy)'}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      )
+                    })}
                   </SelectContent>
                 </Select>
               ) : (
                 <div className="col-span-3 px-3 py-2 border rounded">
-                  {editSource === 'Call' && '📞 Call'}
-                  {editSource === 'Visit' && '🚶 Visit'}
-                  {editSource === 'Rebooking' && '🔄 Rebooking'}
+                  {(() => {
+                    const assignedStaff = staff.find(s => s.id === selectedStaff)
+                    return assignedStaff ? `${assignedStaff.firstName} ${assignedStaff.lastName} (${assignedStaff.position})` : 'No staff assigned'
+                  })()}
                 </div>
               )}
             </div>
-            
-            {/* Notes */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">📝 Notes</Label>
+              <Label className="text-right">Notes</Label>
               {isEditMode ? (
                 <Input
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
                   className="col-span-3"
-                  placeholder="Optional notes"
                   data-testid="input-edit-notes"
                 />
               ) : (
@@ -1696,21 +1533,16 @@ export function EnhancedAssignmentInterface() {
               )}
             </div>
           </div>
-          
-          <div className="flex justify-end space-x-2 pt-4 border-t">
+          <div className="flex justify-end space-x-2">
             {isEditMode ? (
               <>
-                <Button variant="outline" onClick={() => {
-                  setIsEditMode(false)
-                  // Reset edit source to default
-                  setEditSource('Call')
-                }} data-testid="button-cancel-edit">
+                <Button variant="outline" onClick={() => setIsEditMode(false)}>
                   <X className="h-4 w-4 mr-1" />
                   Cancel
                 </Button>
                 <Button onClick={handleBookingUpdate} data-testid="button-update-booking">
                   <Save className="h-4 w-4 mr-1" />
-                  Save Changes
+                  Update
                 </Button>
               </>
             ) : (
@@ -1718,15 +1550,9 @@ export function EnhancedAssignmentInterface() {
                 <Button variant="outline" onClick={() => setShowViewDialog(false)}>
                   Close
                 </Button>
-                <Button onClick={() => {
-                  setIsEditMode(true)
-                  // Set default source when entering edit mode
-                  if (!editSource) {
-                    setEditSource('Call')
-                  }
-                }} data-testid="button-edit-booking">
+                <Button onClick={() => setIsEditMode(true)} data-testid="button-edit-booking">
                   <Edit className="h-4 w-4 mr-1" />
-                  Edit Booking
+                  Edit
                 </Button>
               </>
             )}
@@ -1743,7 +1569,10 @@ export function EnhancedAssignmentInterface() {
               Assign Staff Member
             </DialogTitle>
             <DialogDescription>
-              Select a staff member for this booking. Customer: {assigningBooking?.customer_name || assigningBooking?.customerName || (assigningBooking && customers.find(c => c.id === assigningBooking.customer_id)?.name) || 'Unknown'} - Time: {assigningBooking?.time_slot} on {format(selectedDate, 'MMMM dd, yyyy')} - Service: {assigningBooking && services.find(s => s.id === assigningBooking.service_id)?.name || 'Unknown Service'}
+              Select a staff member for this booking:
+              <br />Customer: {assigningBooking?.customer_name || assigningBooking?.customerName || (assigningBooking && customers.find(c => c.id === assigningBooking.customer_id)?.name) || 'Unknown'}
+              <br />Time: {assigningBooking?.time_slot} on {format(selectedDate, 'MMMM dd, yyyy')}
+              <br />Service: {assigningBooking && services.find(s => s.id === assigningBooking.service_id)?.name || 'Unknown Service'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -1759,8 +1588,7 @@ export function EnhancedAssignmentInterface() {
                       Loading staff members... ({staff.length} available)
                     </SelectItem>
                   ) : (
-                    staff.map((staff) => {
-                      console.log('Rendering staff:', staff.firstName, staff.lastName, staff.id, staff)
+                    staff.filter(staffMember => isStaffWorkingOnDate(staffMember, selectedDate)).map((staff) => {
                       const isAvailable = assigningBooking ? 
                         isStaffWorking(staff, assigningBooking.time_slot) && 
                         !getBookingForSlot(staff.id, assigningBooking.time_slot) : true
@@ -1769,14 +1597,14 @@ export function EnhancedAssignmentInterface() {
                         <SelectItem 
                           key={staff.id} 
                           value={staff.id}
-                          // Remove disabled to allow all staff selection
-                          className={!isAvailable ? 'bg-yellow-50' : ''}
+                          disabled={!isAvailable}
+                          className={!isAvailable ? 'opacity-50' : ''}
                         >
                           <div className="flex items-center justify-between w-full">
                             <span>{staff.firstName} {staff.lastName}</span>
                             <span className="text-xs text-gray-500 ml-2">
                               {staff.position}
-                              {!isAvailable && ' (⚠️ May be busy)'}
+                              {!isAvailable && ' (Busy)'}
                             </span>
                           </div>
                         </SelectItem>

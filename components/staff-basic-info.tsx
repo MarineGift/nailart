@@ -38,12 +38,12 @@ interface EmployeeSkill {
   proficiency_level: string
   certification_date: string
   notes: string
-  skills?: {
+  skills: {
     id: string
     name: string
     description: string
     skill_level: string
-    skill_categories?: {
+    skill_categories: {
       name: string
     }
   }
@@ -164,7 +164,14 @@ export function StaffBasicInfo() {
             skill_id: '1', 
             proficiency_level: 'Expert',
             certification_date: '2023-01-01',
-            notes: 'Advanced manicure techniques'
+            notes: 'Advanced manicure techniques',
+            skills: {
+              id: '1',
+              name: 'Gel Manicure',
+              description: 'Advanced gel manicure techniques',
+              skill_level: 'Expert',
+              skill_categories: { name: 'Manicure' }
+            }
           }
         ],
         '2': [
@@ -174,7 +181,14 @@ export function StaffBasicInfo() {
             skill_id: '2',
             proficiency_level: 'Expert',
             certification_date: '2023-02-01',
-            notes: 'Nail art specialist'
+            notes: 'Nail art specialist',
+            skills: {
+              id: '2',
+              name: 'Nail Art',
+              description: 'Creative nail art and design',
+              skill_level: 'Expert',
+              skill_categories: { name: 'Art & Design' }
+            }
           }
         ]
       }
@@ -256,10 +270,10 @@ export function StaffBasicInfo() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            직원 기본정보
+            Staff Basic Information
           </CardTitle>
           <CardDescription>
-            직원의 개인정보, 자격, 연락처 등 기본 정보 관리
+            Manage staff personal information, qualifications, contact details and basic information
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -284,7 +298,7 @@ export function StaffBasicInfo() {
             </Select>
             <Button onClick={() => openEditDialog(selectedStaff)} variant="outline">
               <Edit className="h-4 w-4 mr-2" />
-              정보 수정
+              Edit Info
             </Button>
           </div>
         </CardContent>
@@ -316,7 +330,7 @@ export function StaffBasicInfo() {
                   {selectedStaff.role === 'manager' ? 'Manager' : 'Staff'}
                 </Badge>
                 <p className="text-sm text-gray-600">
-                  입사일: {new Date(selectedStaff.hireDate).toLocaleDateString()}
+                  Hire Date: {new Date(selectedStaff.hireDate).toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -326,13 +340,13 @@ export function StaffBasicInfo() {
         {/* Middle: Contact Information */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">연락처 정보</CardTitle>
+            <CardTitle className="text-lg">Contact Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-gray-500" />
               <div>
-                <p className="text-sm text-gray-600">이메일</p>
+                <p className="text-sm text-gray-600">Email</p>
                 <p className="font-medium">{selectedStaff.email}</p>
               </div>
             </div>
@@ -340,7 +354,7 @@ export function StaffBasicInfo() {
             <div className="flex items-center gap-3">
               <Phone className="h-4 w-4 text-gray-500" />
               <div>
-                <p className="text-sm text-gray-600">전화번호</p>
+                <p className="text-sm text-gray-600">Phone Number</p>
                 <p className="font-medium">{selectedStaff.phone}</p>
               </div>
             </div>
@@ -348,19 +362,19 @@ export function StaffBasicInfo() {
             <div className="flex items-center gap-3">
               <MapPin className="h-4 w-4 text-gray-500" />
               <div>
-                <p className="text-sm text-gray-600">주소</p>
+                <p className="text-sm text-gray-600">Address</p>
                 <p className="font-medium">{selectedStaff.address}</p>
               </div>
             </div>
 
             <div className="border-t pt-4">
-              <h4 className="font-medium text-sm mb-2">긴급 연락처</h4>
+              <h4 className="font-medium text-sm mb-2">Emergency Contact</h4>
               <div className="space-y-2">
                 <p className="text-sm">
-                  <span className="text-gray-600">연락처:</span> {selectedStaff.emergencyContact}
+                  <span className="text-gray-600">Contact:</span> {selectedStaff.emergencyContact}
                 </p>
                 <p className="text-sm">
-                  <span className="text-gray-600">전화:</span> {selectedStaff.emergencyPhone}
+                  <span className="text-gray-600">Phone:</span> {selectedStaff.emergencyPhone}
                 </p>
               </div>
             </div>
@@ -370,13 +384,13 @@ export function StaffBasicInfo() {
         {/* Right: Professional Information */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">전문 정보</CardTitle>
+            <CardTitle className="text-lg">Professional Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
               <Shield className="h-4 w-4 text-gray-500" />
               <div>
-                <p className="text-sm text-gray-600">국적</p>
+                <p className="text-sm text-gray-600">Nationality</p>
                 <p className="font-medium">{selectedStaff.nationality}</p>
               </div>
             </div>
@@ -384,7 +398,7 @@ export function StaffBasicInfo() {
             <div className="flex items-center gap-3">
               <FileText className="h-4 w-4 text-gray-500" />
               <div>
-                <p className="text-sm text-gray-600">비자 상태</p>
+                <p className="text-sm text-gray-600">Visa Status</p>
                 <Badge className={getVisaStatusBadge(selectedStaff.visaStatus)}>
                   {selectedStaff.visaStatus}
                 </Badge>
@@ -400,7 +414,7 @@ export function StaffBasicInfo() {
             </div>
 
             <div className="border-t pt-4">
-              <h4 className="font-medium text-sm mb-2">경력</h4>
+              <h4 className="font-medium text-sm mb-2">Experience</h4>
               <p className="text-sm text-gray-700">{selectedStaff.experience}</p>
             </div>
           </CardContent>
@@ -426,7 +440,7 @@ export function StaffBasicInfo() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-lg">{employeeSkill.skills?.name || 'Unknown Skill'}</h4>
+                        <h4 className="font-semibold text-lg">{employeeSkill.skills.name}</h4>
                         <Badge 
                           variant={
                             employeeSkill.proficiency_level === 'expert' ? 'default' :
@@ -437,16 +451,16 @@ export function StaffBasicInfo() {
                           {employeeSkill.proficiency_level}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                          {employeeSkill.skills?.skill_categories?.name || 'General'}
+                          {employeeSkill.skills.skill_categories?.name || 'General'}
                         </Badge>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">
-                        {employeeSkill.skills?.description || 'No description available'}
+                        {employeeSkill.skills.description}
                       </p>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="font-medium text-gray-700">Skill Level:</span>
-                          <p className="text-gray-600">{employeeSkill.skills?.skill_level || 'Not specified'}</p>
+                          <p className="text-gray-600">{employeeSkill.skills.skill_level}</p>
                         </div>
                         {employeeSkill.certification_date && (
                           <div>
@@ -485,15 +499,15 @@ export function StaffBasicInfo() {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>직원 정보 수정</DialogTitle>
+            <DialogTitle>Edit Staff Information</DialogTitle>
             <DialogDescription>
-              직원의 기본 정보를 수정합니다.
+              Edit staff basic information.
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div>
-              <Label htmlFor="firstName">이름 *</Label>
+              <Label htmlFor="firstName">First Name *</Label>
               <Input
                 id="firstName"
                 value={formData.firstName}
@@ -501,7 +515,7 @@ export function StaffBasicInfo() {
               />
             </div>
             <div>
-              <Label htmlFor="lastName">성 *</Label>
+              <Label htmlFor="lastName">Last Name *</Label>
               <Input
                 id="lastName"
                 value={formData.lastName}
@@ -509,7 +523,7 @@ export function StaffBasicInfo() {
               />
             </div>
             <div>
-              <Label htmlFor="email">이메일 *</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
@@ -518,7 +532,7 @@ export function StaffBasicInfo() {
               />
             </div>
             <div>
-              <Label htmlFor="phone">전화번호 *</Label>
+              <Label htmlFor="phone">Phone Number *</Label>
               <Input
                 id="phone"
                 value={formData.phone}
@@ -526,7 +540,7 @@ export function StaffBasicInfo() {
               />
             </div>
             <div>
-              <Label htmlFor="role">직급</Label>
+              <Label htmlFor="role">Role</Label>
               <Select value={formData.role} onValueChange={(value: 'staff' | 'manager') => setFormData(prev => ({ ...prev, role: value }))}>
                 <SelectTrigger>
                   <SelectValue />
@@ -538,7 +552,7 @@ export function StaffBasicInfo() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="nationality">국적</Label>
+              <Label htmlFor="nationality">Nationality</Label>
               <Input
                 id="nationality"
                 value={formData.nationality}
@@ -546,7 +560,7 @@ export function StaffBasicInfo() {
               />
             </div>
             <div>
-              <Label htmlFor="visaStatus">비자 상태</Label>
+              <Label htmlFor="visaStatus">Visa Status</Label>
               <Input
                 id="visaStatus"
                 value={formData.visaStatus}
@@ -562,7 +576,7 @@ export function StaffBasicInfo() {
               />
             </div>
             <div className="md:col-span-2">
-              <Label htmlFor="address">주소</Label>
+              <Label htmlFor="address">Address</Label>
               <Input
                 id="address"
                 value={formData.address}
@@ -570,7 +584,7 @@ export function StaffBasicInfo() {
               />
             </div>
             <div>
-              <Label htmlFor="emergencyContact">긴급 연락처</Label>
+              <Label htmlFor="emergencyContact">Emergency Contact</Label>
               <Input
                 id="emergencyContact"
                 value={formData.emergencyContact}
@@ -578,7 +592,7 @@ export function StaffBasicInfo() {
               />
             </div>
             <div>
-              <Label htmlFor="emergencyPhone">긴급 전화번호</Label>
+              <Label htmlFor="emergencyPhone">Emergency Phone</Label>
               <Input
                 id="emergencyPhone"
                 value={formData.emergencyPhone}
@@ -586,7 +600,7 @@ export function StaffBasicInfo() {
               />
             </div>
             <div className="md:col-span-2">
-              <Label htmlFor="experience">경력</Label>
+              <Label htmlFor="experience">Experience</Label>
               <Textarea
                 id="experience"
                 value={formData.experience}
@@ -598,10 +612,10 @@ export function StaffBasicInfo() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              취소
+              Cancel
             </Button>
             <Button onClick={handleSave} disabled={loading}>
-              {loading ? '저장 중...' : '저장'}
+              {loading ? 'Saving...' : 'Save'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,7 +1,6 @@
 // Individual booking management API
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { sendBookingUpdateEmailToAdmin } from '@/lib/notifications'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -35,14 +34,54 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     console.log('Updating booking:', id, 'with data:', body)
     
     // Only update fields that exist in the actual database schema
-    const updateData: any = {
-      status: body.status,
-      notes: body.notes
+    const updateData: any = {}
+    
+    // Add status if provided
+    if (body.status) {
+      updateData.status = body.status
     }
     
-    // Add staff assignment if provided - use notes field to store staff assignment
-    if (body.staff_id) {
-      updateData.notes = `${body.notes || ''} | Assigned Staff: ${body.staff_id}`.trim()
+    // Add notes if provided
+    if (body.notes) {
+      updateData.notes = body.notes
+    }
+    
+    // Add date and time updates if provided
+    if (body.booking_date && body.time_slot) {
+      updateData.booking_time = `${body.booking_date}T${body.time_slot}:00+00:00`
+    } else if (body.booking_date) {
+      // Extract time from original booking and combine with new date
+      // This would require fetching the original booking first
+      const originalBooking = await supabase
+        .from('bookings')
+        .select('booking_time')
+        .eq('id', id)
+        .single()
+      
+      if (originalBooking.data?.booking_time) {
+        const originalTime = new Date(originalBooking.data.booking_time).toTimeString().slice(0, 5)
+        updateData.booking_time = `${body.booking_date}T${originalTime}:00+00:00`
+      }
+    } else if (body.time_slot) {
+      // Extract date from original booking and combine with new time
+      const originalBooking = await supabase
+        .from('bookings')
+        .select('booking_time')
+        .eq('id', id)
+        .single()
+      
+      if (originalBooking.data?.booking_time) {
+        const originalDate = new Date(originalBooking.data.booking_time).toISOString().split('T')[0]
+        updateData.booking_time = `${originalDate}T${body.time_slot}:00+00:00`
+      }
+    }
+    
+    // Note: service_id column doesn't exist in bookings table based on schema
+    // Service information is handled through service relationships or notes
+    
+    // Remove old "Assigned Staff" entries from notes to prevent duplication
+    if (body.notes) {
+      updateData.notes = body.notes.replace(/\s*\|\s*Assigned Staff: [a-f0-9-]+/g, '').trim()
     }
     
     const { data: booking, error } = await supabase
@@ -58,42 +97,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     console.log('Successfully updated booking:', booking)
-    
-    // Send email notification for booking update
-    try {
-      const { data: completeBooking } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          customers(
-            id,
-            last_name,
-            phone_raw,
-            email
-          ),
-          booking_details(
-            id,
-            service_id,
-            quantity,
-            price_cents,
-            services(
-              id,
-              name,
-              description,
-              category
-            )
-          )
-        `)
-        .eq('id', id)
-        .single()
-
-      const bookingForNotification = completeBooking || booking
-      await sendBookingUpdateEmailToAdmin(bookingForNotification)
-    } catch (notificationError) {
-      console.error('Failed to send booking update notification:', notificationError)
-      // Don't fail the update if notification fails
-    }
-    
     return NextResponse.json(booking)
   } catch (error) {
     console.error('Error updating booking:', error)

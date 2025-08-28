@@ -48,18 +48,18 @@ export async function GET(request: Request) {
 
     // Get summary statistics per staff
     const summaryQuery = db.select({
-      staffId: treatments.staffId,
+      staffId: serviceRecords.staffId,
       staffName: sql<string>`concat(${staffs.firstName}, ' ', ${staffs.lastName})`,
-      totalCustomers: sql<number>`count(distinct ${treatments.customerId})`,
-      totalServices: sql<number>`count(${treatments.id})`,
-      totalRevenue: sql<number>`sum(${treatments.actualPrice})`,
-      totalHours: sql<number>`sum(${treatments.actualDuration}) / 60.0`,
-      averageRating: sql<number>`avg(${treatments.customerSatisfaction})`,
-      averageServiceDuration: sql<number>`avg(${treatments.actualDuration})`
-    }).from(treatments)
-    .leftJoin(staff, eq(treatments.staffId, staff.id))
+      totalCustomers: sql<number>`count(distinct ${serviceRecords.customerId})`,
+      totalServices: sql<number>`count(${serviceRecords.id})`,
+      totalRevenue: sql<number>`sum(${serviceRecords.actualPrice})`,
+      totalHours: sql<number>`sum(${serviceRecords.actualDuration}) / 60.0`,
+      averageRating: sql<number>`avg(${serviceRecords.customerSatisfaction})`,
+      averageServiceDuration: sql<number>`avg(${serviceRecords.actualDuration})`
+    }).from(serviceRecords)
+    .leftJoin(staffs, eq(serviceRecords.staffId, staffs.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .groupBy(treatments.staffId, staff.firstName, staff.lastName)
+    .groupBy(serviceRecords.staffId, staffs.firstName, staffs.lastName)
 
     const summaryStats = await summaryQuery
 

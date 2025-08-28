@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Map Supabase fields to frontend expected format
-    const mappedStaff = staff?.map(member => ({
+    const mappedStaff = staff?.map((member, index) => ({
       id: member.id,
-      firstName: member.first_name || `Staff`,
-      lastName: member.last_name || `${member.id.slice(-4)}`,
+      firstName: member.first_name || `Staff${index + 1}`,
+      lastName: member.last_name || `Member`,
       position: member.role || 'Nail Technician',
       specialties: member.specialties || ['Nail Specialist', 'Manicure', 'Pedicure'],
       working_hours: {
@@ -38,7 +38,6 @@ export async function GET(request: NextRequest) {
     })) || []
 
     console.log(`✅ Found ${mappedStaff.length} staff members from Supabase`)
-    console.log('Staff data sample:', mappedStaff.slice(0, 2))
     return NextResponse.json(mappedStaff)
   } catch (error) {
     console.error('Error fetching staff:', error)

@@ -206,10 +206,10 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              {selectedCustomer.firstName} {selectedCustomer.lastName} 상세 정보
+              {selectedCustomer.firstName} {selectedCustomer.lastName} Details
             </DialogTitle>
             <DialogDescription>
-              고객의 상세 정보, 예약 내역, 시술 내역을 확인할 수 있습니다
+              View customer's detailed information, booking history, and treatment records
             </DialogDescription>
           </DialogHeader>
           
@@ -217,7 +217,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
             {/* Customer Info Card */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">기본 정보</CardTitle>
+                <CardTitle className="text-lg">Basic Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-start gap-6">
@@ -228,14 +228,14 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                   
                   <div className="flex-1 grid grid-cols-2 gap-4">
                     <div>
-                      <p><span className="font-medium">이름:</span> {selectedCustomer.firstName} {selectedCustomer.lastName}</p>
-                      <p><span className="font-medium">전화번호:</span> {selectedCustomer.phoneNumber}</p>
-                      <p><span className="font-medium">이메일:</span> {selectedCustomer.email || '-'}</p>
+                      <p><span className="font-medium">Name:</span> {selectedCustomer.firstName} {selectedCustomer.lastName}</p>
+                      <p><span className="font-medium">Phone:</span> {selectedCustomer.phoneNumber}</p>
+                      <p><span className="font-medium">Email:</span> {selectedCustomer.email || '-'}</p>
                     </div>
                     <div>
-                      <p><span className="font-medium">VIP 등급:</span> <Badge className={getVipBadgeColor(selectedCustomer.vipLevel)}>{selectedCustomer.vipLevel}</Badge></p>
-                      <p><span className="font-medium">총 방문:</span> {selectedCustomer.totalVisits}회</p>
-                      <p><span className="font-medium">총 결제 금액:</span> <span className="text-lg font-bold text-green-600">${totalAmount.toLocaleString()}</span></p>
+                      <p><span className="font-medium">VIP Level:</span> <Badge className={getVipBadgeColor(selectedCustomer.vipLevel)}>{selectedCustomer.vipLevel}</Badge></p>
+                      <p><span className="font-medium">Total Visits:</span> {selectedCustomer.totalVisits} times</p>
+                      <p><span className="font-medium">Total Paid:</span> <span className="text-lg font-bold text-green-600">${totalAmount.toLocaleString()}</span></p>
                     </div>
                   </div>
                 </div>
@@ -247,19 +247,19 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  예약 내역 ({customerBookings.length}개)
+                  Booking History ({customerBookings.length} records)
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>날짜</TableHead>
-                      <TableHead>시간</TableHead>
-                      <TableHead>서비스</TableHead>
-                      <TableHead>담당자</TableHead>
-                      <TableHead>상태</TableHead>
-                      <TableHead>금액</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Service</TableHead>
+                      <TableHead>Staff</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Amount</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -280,7 +280,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                   </TableBody>
                 </Table>
                 {customerBookings.length > 5 && (
-                  <p className="text-sm text-gray-500 mt-2">최근 5개만 표시됨 (총 {customerBookings.length}개)</p>
+                  <p className="text-sm text-gray-500 mt-2">Showing recent 5 only (total {customerBookings.length} records)</p>
                 )}
               </CardContent>
             </Card>
@@ -290,18 +290,18 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
-                  시술 내역 ({customerTreatments.length}개)
+                  Treatment History ({customerTreatments.length} records)
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>날짜</TableHead>
-                      <TableHead>서비스</TableHead>
-                      <TableHead>상태</TableHead>
-                      <TableHead>금액</TableHead>
-                      <TableHead>메모</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Service</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Notes</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -321,7 +321,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                   </TableBody>
                 </Table>
                 {customerTreatments.length > 10 && (
-                  <p className="text-sm text-gray-500 mt-2">최근 10개만 표시됨 (총 {customerTreatments.length}개)</p>
+                  <p className="text-sm text-gray-500 mt-2">Showing recent 10 only (total {customerTreatments.length} records)</p>
                 )}
               </CardContent>
             </Card>
@@ -340,12 +340,12 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          대시보드로 돌아가기
+          Back to Dashboard
         </Button>
         
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5" />
-          <h1 className="text-2xl font-bold">고객 관리</h1>
+          <h1 className="text-2xl font-bold">Customer Management</h1>
         </div>
       </div>
 
@@ -353,11 +353,11 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="all-customers" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            전체 고객 리스트
+            All Customers List
           </TabsTrigger>
           <TabsTrigger value="individual" className="flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
-            개인별 고객 관리
+            Individual Customer Management
           </TabsTrigger>
         </TabsList>
 
@@ -367,12 +367,12 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>전체 고객 목록 ({enhancedCustomers.length}명)</CardTitle>
-                  <CardDescription>모든 고객의 방문 내역과 시술 정보를 확인하세요</CardDescription>
+                  <CardTitle>All Customers ({enhancedCustomers.length} customers)</CardTitle>
+                  <CardDescription>View all customers' visit history and treatment information</CardDescription>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">페이지당:</span>
+                  <span className="text-sm text-gray-600">Per page:</span>
                   <Select value={itemsPerPage.toString()} onValueChange={(value) => {
                     setItemsPerPage(Number(value))
                     setCurrentPage(1)
@@ -390,19 +390,19 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-center py-8 text-gray-500">로딩 중...</div>
+                <div className="text-center py-8 text-gray-500">Loading...</div>
               ) : (
                 <>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>고객명</TableHead>
-                        <TableHead>전화번호</TableHead>
-                        <TableHead>VIP 등급</TableHead>
-                        <TableHead>총 방문</TableHead>
-                        <TableHead>최근 방문</TableHead>
-                        <TableHead>최근 시술</TableHead>
-                        <TableHead>총 결제</TableHead>
+                        <TableHead>Customer Name</TableHead>
+                        <TableHead>Phone Number</TableHead>
+                        <TableHead>VIP Level</TableHead>
+                        <TableHead>Total Visits</TableHead>
+                        <TableHead>Last Visit</TableHead>
+                        <TableHead>Recent Treatment</TableHead>
+                        <TableHead>Total Paid</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -421,7 +421,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                               {customer.vipLevel}
                             </Badge>
                           </TableCell>
-                          <TableCell>{customer.totalVisits}회</TableCell>
+                          <TableCell>{customer.totalVisits} times</TableCell>
                           <TableCell>
                             {customer.lastVisit ? format(new Date(customer.lastVisit), 'yyyy-MM-dd') : '-'}
                           </TableCell>
@@ -441,7 +441,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                   {totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4">
                       <p className="text-sm text-gray-600">
-                        {startIndex + 1}-{Math.min(startIndex + itemsPerPage, enhancedCustomers.length)} / {enhancedCustomers.length}명
+                        {startIndex + 1}-{Math.min(startIndex + itemsPerPage, enhancedCustomers.length)} / {enhancedCustomers.length} customers
                       </p>
                       
                       <div className="flex items-center gap-2">
@@ -452,11 +452,11 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                           disabled={currentPage === 1}
                         >
                           <ChevronLeft className="h-4 w-4" />
-                          이전
+                          Previous
                         </Button>
                         
                         <span className="text-sm">
-                          페이지 {currentPage} / {totalPages}
+                          Page {currentPage} of {totalPages}
                         </span>
                         
                         <Button
@@ -465,7 +465,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                           onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                           disabled={currentPage === totalPages}
                         >
-                          다음
+                          Next
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </div>
@@ -482,8 +482,8 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
           {/* Search Section */}
           <Card>
             <CardHeader>
-              <CardTitle>개인 고객 검색</CardTitle>
-              <CardDescription>전화번호나 성(Last Name)으로 고객을 검색하세요</CardDescription>
+              <CardTitle>Individual Customer Search</CardTitle>
+              <CardDescription>Search customers by phone number or last name</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
@@ -495,7 +495,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                     <SelectItem value="phone">
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4" />
-                        전화번호
+                        Phone Number
                       </div>
                     </SelectItem>
                     <SelectItem value="lastName">
@@ -508,7 +508,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                 </Select>
 
                 <Input
-                  placeholder={searchType === 'phone' ? "010-1234-5678" : "김, 이, 박..."}
+                  placeholder={searchType === 'phone' ? "555-1234" : "Smith, Johnson, Brown..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -516,7 +516,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
 
                 <Button onClick={handleSearch}>
                   <Search className="h-4 w-4 mr-2" />
-                  검색
+                  Search
                 </Button>
               </div>
             </CardContent>
@@ -556,16 +556,16 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                         </div>
                         <div className="flex items-center gap-3">
                           <Calendar className="h-4 w-4 text-gray-500" />
-                          <span>총 방문: <span className="font-medium">{(defaultCustomer || searchResults[0]).totalVisits}회</span></span>
+                          <span>Total Visits: <span className="font-medium">{(defaultCustomer || searchResults[0]).totalVisits} times</span></span>
                         </div>
                         <div className="flex items-center gap-3">
                           <DollarSign className="h-4 w-4 text-gray-500" />
-                          <span>총 결제: <span className="font-medium text-green-600">${(defaultCustomer || searchResults[0]).totalSpent.toLocaleString()}</span></span>
+                          <span>Total Paid: <span className="font-medium text-green-600">${(defaultCustomer || searchResults[0]).totalSpent.toLocaleString()}</span></span>
                         </div>
                         {(defaultCustomer || searchResults[0]).lastVisit && (
                           <div className="flex items-center gap-3">
                             <User className="h-4 w-4 text-gray-500" />
-                            <span>최근 방문: <span className="font-medium">{format(new Date((defaultCustomer || searchResults[0]).lastVisit), 'yyyy-MM-dd')}</span></span>
+                            <span>Recent Visit: <span className="font-medium">{format(new Date((defaultCustomer || searchResults[0]).lastVisit!), 'yyyy-MM-dd')}</span></span>
                           </div>
                         )}
                       </div>
@@ -574,18 +574,18 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                     {/* Selected Treatment Details */}
                     {selectedTreatment && (
                       <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                        <h3 className="font-semibold text-purple-800 mb-3">시술 상세 정보</h3>
+                        <h3 className="font-semibold text-purple-800 mb-3">Treatment Details</h3>
                         <div className="space-y-2 text-sm">
-                          <div><span className="font-medium">서비스:</span> {selectedTreatment.service_name}</div>
-                          <div><span className="font-medium">날짜:</span> {format(new Date(selectedTreatment.treatment_date), 'yyyy-MM-dd')}</div>
-                          <div><span className="font-medium">금액:</span> <span className="text-green-600 font-medium">${(selectedTreatment.grand_total_cents / 100).toLocaleString()}</span></div>
-                          <div><span className="font-medium">상태:</span> 
+                          <div><span className="font-medium">Service:</span> {selectedTreatment.service_name}</div>
+                          <div><span className="font-medium">Date:</span> {format(new Date(selectedTreatment.treatment_date), 'yyyy-MM-dd')}</div>
+                          <div><span className="font-medium">Amount:</span> <span className="text-green-600 font-medium">${(selectedTreatment.grand_total_cents / 100).toLocaleString()}</span></div>
+                          <div><span className="font-medium">Status:</span> 
                             <Badge variant={selectedTreatment.status === 'completed' ? 'default' : 'secondary'} className="ml-2">
                               {selectedTreatment.status}
                             </Badge>
                           </div>
                           {selectedTreatment.notes && (
-                            <div><span className="font-medium">메모:</span> {selectedTreatment.notes}</div>
+                            <div><span className="font-medium">Notes:</span> {selectedTreatment.notes}</div>
                           )}
                         </div>
                       </div>
@@ -602,7 +602,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Calendar className="h-5 w-5" />
-                        금월 방문 내역
+                        This Month's Visits
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -651,7 +651,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                                   bookingDate.getMonth() === currentMonth && 
                                   bookingDate.getFullYear() === currentYear
                          }).length === 0 && (
-                           <p className="text-gray-500 text-center py-4">금월 방문 내역이 없습니다.</p>
+                           <p className="text-gray-500 text-center py-4">No visits this month.</p>
                          )}
                       </div>
                     </CardContent>
@@ -662,7 +662,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <DollarSign className="h-5 w-5" />
-                        전체 시술 내역
+                        All Treatment History
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -710,7 +710,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
           {searchQuery && searchResults.length === 0 && (
             <Card>
               <CardContent className="text-center py-8 text-gray-500">
-                검색 결과가 없습니다.
+                No search results found.
               </CardContent>
             </Card>
           )}
@@ -718,7 +718,7 @@ export default function EnhancedCustomerManagement({ onBack }: EnhancedCustomerM
           {!searchQuery && !defaultCustomer && !isLoading && (
             <Card>
               <CardContent className="text-center py-8 text-gray-500">
-                고객 데이터를 불러오는 중...
+                Loading customer data...
               </CardContent>
             </Card>
           )}

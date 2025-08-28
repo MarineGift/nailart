@@ -9,7 +9,6 @@ import {
   text,
   decimal,
   boolean,
-  uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 
@@ -37,7 +36,7 @@ export const users = pgTable("users", {
 
 // Customers table
 export const customers = pgTable("customers", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 100 }),
   firstName: varchar("first_name", { length: 100 }),
   lastName: varchar("last_name", { length: 100 }),
@@ -55,7 +54,7 @@ export const customers = pgTable("customers", {
 
 // Categories table for services
 export const categories = pgTable("categories", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
   color: varchar("color", { length: 20 }).default('#8B5CF6'), // Purple default
@@ -68,13 +67,13 @@ export const categories = pgTable("categories", {
 
 // Services table
 export const services = pgTable("services", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   code: varchar("code", { length: 20 }).unique(), // Service code like SPA001, NT001
   name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
   basePriceCents: integer("base_price_cents").notNull(), // Price in cents
   durationMin: integer("duration_min").notNull(), // Duration in minutes
-  categoryId: uuid("category_id").references(() => categories.id),
+  categoryId: varchar("category_id").references(() => categories.id),
   category: varchar("category", { length: 50 }), // Legacy support
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
@@ -125,9 +124,11 @@ export const staffWorkSchedule = pgTable("staff_work_schedule", {
 
 // Bookings table - Booking information 
 export const bookings = pgTable("bookings", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  customer_id: uuid("customer_id").references(() => customers.id).notNull(),
-  booking_time: timestamp("booking_time").notNull(),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customer_id: varchar("customer_id").references(() => customers.id).notNull(),
+  customer_phone: varchar("customer_phone"),
+  booking_start: timestamp("booking_start").notNull(),
+  booking_end: timestamp("booking_end").notNull(),
   staff_id: varchar("staff_id").references(() => staff.id), // Add staff assignment field
   notes: text("notes"),
   prepay: boolean("prepay").default(false),
@@ -143,7 +144,7 @@ export const bookings = pgTable("bookings", {
 // Booking Details table - Services in each booking
 export const bookingDetails = pgTable("booking_details", {
   id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  booking_id: uuid("booking_id").references(() => bookings.id).notNull(),
+  booking_id: varchar("booking_id").references(() => bookings.id).notNull(),
   service_id: integer("service_id").references(() => services.id).notNull(),
   quantity: integer("quantity").default(1),
   price_cents: integer("price_cents").notNull(),
@@ -309,19 +310,6 @@ export const customerInquiries = pgTable("customer_inquiries", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Settings table - Key-value configuration storage
-export const settings = pgTable("settings", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  key: varchar("key", { length: 100 }).notNull().unique(),
-  value: text("value"),
-  description: text("description"),
-  type: varchar("type", { length: 20 }).default('string'), // 'string', 'number', 'boolean', 'json'
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-  updatedBy: varchar("updated_by"),
-});
-
 // Export types
 export type User = typeof users.$inferSelect;
 export type UpsertUser = typeof users.$inferInsert;
@@ -353,8 +341,6 @@ export type StaffWorkSummary = typeof staffWorkSummary.$inferSelect;
 export type InsertStaffWorkSummary = typeof staffWorkSummary.$inferInsert;
 export type CustomerInquiry = typeof customerInquiries.$inferSelect;
 export type InsertCustomerInquiry = typeof customerInquiries.$inferInsert;
-export type Setting = typeof settings.$inferSelect;
-export type InsertSetting = typeof settings.$inferInsert;
 
 // Zod schemas for API validation
 export const insertGalleryImageSchema = createInsertSchema(galleryImages);
@@ -369,4 +355,3 @@ export const insertTreatmentSchema = createInsertSchema(treatments);
 export const insertBookingDetailSchema = createInsertSchema(bookingDetails);
 export const insertTreatmentDetailSchema = createInsertSchema(treatmentDetails);
 export const insertCustomerInquirySchema = createInsertSchema(customerInquiries);
-export const insertSettingSchema = createInsertSchema(settings);

@@ -55,25 +55,6 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
   const [clientSecret, setClientSecret] = useState('')
   const { toast } = useToast()
 
-  // Phone number formatting function
-  const formatPhoneNumber = (value: string) => {
-    // Remove all non-digit characters
-    const cleaned = value.replace(/\D/g, '')
-    
-    // Limit to 10 digits
-    const limited = cleaned.slice(0, 10)
-    
-    // Format as (123) 456-7890
-    if (limited.length >= 6) {
-      return `(${limited.slice(0, 3)}) ${limited.slice(3, 6)}-${limited.slice(6)}`
-    } else if (limited.length >= 3) {
-      return `(${limited.slice(0, 3)}) ${limited.slice(3)}`
-    } else if (limited.length > 0) {
-      return `(${limited}`
-    }
-    return limited
-  }
-
   const fetchNonWorkingDays = async () => {
     try {
       const year = selectedDate.getFullYear()
@@ -119,7 +100,7 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
       const rebookingData = sessionStorage.getItem('rebookingData')
       if (rebookingData) {
         const data = JSON.parse(rebookingData)
-        console.log('🔄 리부킹 데이터 발견:', data)
+        console.log('🔄 Rebooking data found:', data)
         
         // Auto-fill customer information
         setCustomerInfo({
@@ -128,7 +109,7 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
           email: '',
           gender: '',
           ethnicity: '',
-          notes: `리부킹 (원본 예약 ID: ${data.booking_id})`,
+          notes: `Rebooking (Original Booking ID: ${data.booking_id})`,
           isExistingCustomer: true
         })
         
@@ -136,8 +117,8 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
         sessionStorage.removeItem('rebookingData')
         
         toast({
-          title: '리부킹 정보 로드됨',
-          description: `${data.name}님의 기존 정보가 자동으로 입력되었습니다.`,
+          title: 'Rebooking Information Loaded',
+          description: `Existing information for ${data.name} has been automatically filled in.`,
         })
       }
     } catch (error) {
@@ -288,23 +269,23 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
       let customerId: number
 
       if (customerInfo.isExistingCustomer) {
-        // 기존 고객인 경우 - 고객 ID 조회만 수행
-        console.log('기존 고객ID 조회 중...')
+        // Existing customer case - only look up customer ID
+        console.log('Looking up existing customer ID...')
         const existingCustomerResponse = await fetch(`/api/customers?phone=${customerInfo.phone}`)
         if (existingCustomerResponse.ok) {
           const existingCustomers = await existingCustomerResponse.json()
           if (existingCustomers.length > 0) {
             customerId = existingCustomers[0].id
-            console.log('기존 고객ID 찾음:', customerId)
+            console.log('Found existing customer ID:', customerId)
           } else {
-            throw new Error('기존 고객 정보를 찾을 수 없습니다.')
+            throw new Error('Cannot find existing customer information.')
           }
         } else {
-          throw new Error('기존 고객 조회에 실패했습니다.')
+          throw new Error('Failed to lookup existing customer.')
         }
       } else {
-        // 신규 고객인 경우 - 새 고객 생성
-        console.log('신규 고객 생성 중...')
+        // New customer case - create new customer
+        console.log('Creating new customer...')
         const customerData = {
           phone_number: customerInfo.phone,
           last_name: customerInfo.lastName,
@@ -551,7 +532,7 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
             <div className="relative z-10 flex items-center justify-center h-full text-center px-8">
               <div>
                 <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
-                  💅 Book Your Appointment
+                  Book Your Appointment
                 </h1>
                 <p className="text-xl text-white/90 drop-shadow-md max-w-2xl mx-auto">
                   Experience luxury nail care with our expert technicians
@@ -662,7 +643,7 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
                         '10:00', '10:30', '11:00', '11:30', '12:00', 
                         '12:30', '13:00', '13:30', '14:00', '14:30', 
                         '15:00', '15:30', '16:00', '16:30', '17:00', 
-                        '17:30', '18:00', '18:30', '19:00', '19:30'
+                        '17:30', '18:00'
                       ].map((timeSlot) => {
                         // Use real staff data with proper availability check 
                         const workingStaffList = staff.length > 0 ? staff : []
@@ -894,12 +875,10 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
                         id="customerPhone"
                         value={customerInfo.phone}
                         onChange={(e) => {
-                          const formatted = formatPhoneNumber(e.target.value)
-                          setCustomerInfo({...customerInfo, phone: formatted})
-                          // Only lookup if we have enough digits (at least 10)
-                          const digits = formatted.replace(/\D/g, '')
-                          if (digits.length >= 10) {
-                            lookupCustomerByPhone(formatted)
+                          const phone = e.target.value
+                          setCustomerInfo({...customerInfo, phone})
+                          if (phone.length >= 10) {
+                            lookupCustomerByPhone(phone)
                           }
                         }}
                         placeholder="010-1234-5678"
@@ -1332,6 +1311,13 @@ export function CustomerBookingFlow({ onBack }: CustomerBookingFlowProps = {}) {
                 data-testid="button-book-now"
               >
                 Booking Confirm
+              </Button>
+              <Button 
+                onClick={handleNextStep}
+                disabled={!canProceedFromStep4}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                data-testid="button-next"
+              >
               </Button>
             </div>
           ) : (

@@ -1,22 +1,29 @@
+// 전화번호 포맷팅 유틸리티
+
 export function formatPhoneNumber(phone: string): string {
-  // Remove all non-digit characters
-  const digits = phone.replace(/\D/g, '');
+  if (!phone) return ''
   
-  // Format as (XXX) XXX-XXXX
+  // 숫자만 추출
+  const digits = phone.replace(/\D/g, '')
+  
+  // 10자리 미국 번호인 경우 (571)531-8278 형태로 포맷
   if (digits.length === 10) {
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 3)})${digits.slice(3, 6)}-${digits.slice(6)}`
   }
   
-  // If 11 digits and starts with 1, remove the 1 and format
-  if (digits.length === 11 && digits[0] === '1') {
-    const cleaned = digits.slice(1);
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+  // 11자리이고 1로 시작하는 경우 (미국 국가코드 포함)
+  if (digits.length === 11 && digits.startsWith('1')) {
+    const areaCode = digits.slice(1, 4)
+    const exchange = digits.slice(4, 7)
+    const number = digits.slice(7)
+    return `(${areaCode})${exchange}-${number}`
   }
   
-  // Return original if can't format
-  return phone;
+  // 다른 형태는 원본 반환
+  return phone
 }
 
-export function cleanPhoneNumber(phone: string): string {
-  return phone.replace(/\D/g, '');
+export function parsePhoneNumber(formattedPhone: string): string {
+  // 포맷된 번호에서 숫자만 추출하여 원본 형태로 변환
+  return formattedPhone.replace(/\D/g, '')
 }
