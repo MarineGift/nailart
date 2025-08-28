@@ -12,10 +12,10 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# 선택사항 - 외부 서비스
-TWILIO_ACCOUNT_SID=your-account-sid
-TWILIO_AUTH_TOKEN=your-auth-token
-TWILIO_PHONE_NUMBER=your-phone-number
+# 필수 - Twilio SMS 서비스
+TWILIO_ACCOUNT_SID=ACa24a87159bf2e5d77376bb0da09b5218
+TWILIO_AUTH_TOKEN=e95bad8ab333f397b3a810b7e6799833
+TWILIO_PHONE_NUMBER=+18885493238
 
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_your_key
 STRIPE_SECRET_KEY=sk_live_your_key
@@ -64,8 +64,18 @@ Repository Settings → Secrets and variables → Actions에서 다음 secrets �
 2. "New Project" → GitHub 리포지토리 선택
 3. Framework Preset: **Next.js** 선택
 
-### 2. 환경 변수 설정
-Vercel 대시보드 → Project Settings → Environment Variables에서 모든 환경 변수 추가
+### 2. 환경 변수 설정 (중요!)
+Vercel 대시보드 → Project Settings → Environment Variables에서 다음 필수 환경 변수들을 추가:
+
+**필수 환경 변수:**
+```
+DATABASE_URL=your_postgres_connection_string
+TWILIO_ACCOUNT_SID=ACa24a87159bf2e5d77376bb0da09b5218
+TWILIO_AUTH_TOKEN=e95bad8ab333f397b3a810b7e6799833
+TWILIO_PHONE_NUMBER=+18885493238
+```
+
+⚠️ **빌드 에러 방지:** 모든 Twilio 환경 변수를 설정하지 않으면 빌드가 실패합니다.
 
 ### 3. 도메인 설정 (선택사항)
 - Vercel 대시보드 → Domains

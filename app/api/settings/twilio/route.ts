@@ -4,11 +4,12 @@ import { settings } from '@/shared/schema'
 import { eq } from 'drizzle-orm'
 
 export async function GET() {
+  // Always return early during build process
+  if (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV) {
+    return NextResponse.json({}, { status: 404 })
+  }
+
   try {
-    // Skip only during actual build process (not development)
-    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL && !process.env.VERCEL_ENV) {
-      return NextResponse.json({}, { status: 404 })
-    }
 
     const twilioSettings = await db
       .select()
@@ -36,14 +37,15 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Always return early during build process
+  if (process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV) {
+    return NextResponse.json(
+      { error: 'Settings service not available during build' },
+      { status: 503 }
+    )
+  }
+
   try {
-    // Skip only during actual build process (not development)
-    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL && !process.env.VERCEL_ENV) {
-      return NextResponse.json(
-        { error: 'Settings service not available during build' },
-        { status: 503 }
-      )
-    }
 
     const { account_sid, auth_token, phone_number } = await request.json()
 

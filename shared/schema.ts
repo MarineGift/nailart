@@ -9,6 +9,8 @@ import {
   text,
   decimal,
   boolean,
+  date,
+  serial,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 
@@ -368,7 +370,28 @@ export const settings = pgTable("settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Work history table for staff management
+export const workHistory = pgTable("work_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  staffId: varchar("staff_id").references(() => staff.id).notNull(),
+  eventType: varchar("event_type", { length: 50 }).notNull(), // 'hire', 'resignation', 'vacation', 'home_visit', 'promotion', 'training'
+  eventDate: timestamp("event_date").notNull(),
+  endDate: timestamp("end_date"), // For vacation, home visits
+  title: varchar("title", { length: 200 }),
+  description: text("description"),
+  notes: text("notes"),
+  attachments: text("attachments").array(), // File URLs or document references
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertSettingSchema = createInsertSchema(settings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertWorkHistorySchema = createInsertSchema(workHistory).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -376,3 +399,5 @@ export const insertSettingSchema = createInsertSchema(settings).omit({
 
 export type InsertSetting = typeof insertSettingSchema._input;
 export type SelectSetting = typeof settings.$inferSelect;
+export type InsertWorkHistory = typeof insertWorkHistorySchema._input;
+export type SelectWorkHistory = typeof workHistory.$inferSelect;
