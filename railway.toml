@@ -1,0 +1,21 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "npm start"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[[services]]
+name = "connienail-app"
+
+[services.healthcheck]
+path = "/api/health"
+timeout = 300
+interval = 300
+
+[environments.production]
+[environments.production.variables]
+NODE_ENV = "production"
+PORT = "3000"

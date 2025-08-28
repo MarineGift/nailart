@@ -20,6 +20,10 @@ const nextConfig = {
     ],
   },
   serverExternalPackages: ['postgres'],
+  generateBuildId: async () => {
+    return 'connienail-build'
+  },
+  output: 'standalone',
 }
 
 export default nextConfig

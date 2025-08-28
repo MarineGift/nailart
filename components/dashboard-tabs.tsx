@@ -12,7 +12,7 @@ import { AdminBookingInterface } from '@/components/admin-booking-interface-new'
 import { AdminDashboardOverview } from '@/components/admin-dashboard-overview'
 import { AdminPaymentAnalytics } from '@/components/admin-payment-analytics'
 import { StaffDashboard } from '@/components/staff-dashboard'
-import TwilioSettings from './twilio-settings'
+import EnhancedSettings from './enhanced-settings'
 import { CustomerInquiries } from '@/components/customer-inquiries'
 import { NewsManager } from '@/components/news-manager'
 import { AdminManagement } from '@/components/admin-management'
@@ -28,7 +28,7 @@ import { AdminCalendarAssignment } from '@/components/admin-calendar-assignment'
 import { AdminAssignmentInterface } from '@/components/admin-assignment-interface'
 import { CustomerSheetManagement } from '@/components/customer-sheet-management'
 import { CRMManagement } from '@/components/crm-management'
-import { StaffManagement } from '@/components/staff-management'
+import EnhancedStaffManagement from './enhanced-staff-management'
 import { ServicesManagement } from '@/components/services-management'
 import { TreatmentManagement } from '@/components/treatment-management'
 import { EnhancedAssignmentInterface } from '@/components/enhanced-assignment-interface'
@@ -545,7 +545,7 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
         </TabsContent>
 
         <TabsContent value="staff" className="space-y-6">
-          <StaffManagement currentUser={currentUser} />
+          <EnhancedStaffManagement currentUser={currentUser} />
         </TabsContent>
 
         <TabsContent value="crm" className="space-y-6">
@@ -566,10 +566,7 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
-          <div className="grid gap-6">
-            <AdminSettingsEnhanced currentUser={currentUser} />
-            <TwilioSettings />
-          </div>
+          <EnhancedSettings />
         </TabsContent>
       </Tabs>
     </div>

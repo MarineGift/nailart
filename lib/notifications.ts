@@ -99,6 +99,12 @@ export async function sendNewBookingEmailToAdmin(bookingData: BookingNotificatio
 
 // SMS 알림 발송 (Twilio 사용)
 export async function sendNewBookingSMSToAdmin(bookingData: BookingNotificationData) {
+  // Skip Twilio validation during build time
+  if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    console.log('Skipping Twilio validation during build')
+    return { success: false, error: 'SMS service not available during build' }
+  }
+  
   if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
     console.error('Twilio credentials not configured')
     return { success: false, error: 'Twilio not configured' }
