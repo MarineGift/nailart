@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -92,125 +93,126 @@ function PaymentForm({ bookingDetails, discountRate }: { bookingDetails: Booking
   )
 }
 
-function PaymentPageContent() {
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+
+export default function PaymentPage() {
+  const router = useRouter()
   const { toast } = useToast()
   const [clientSecret, setClientSecret] = useState<string>('')
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [discountRate, setDiscountRate] = useState(0)
+  const [mounted, setMounted] = useState(false)
 
-  // Client-side URL parameter parsing to avoid useSearchParams() SSR issues
-  const getURLParams = () => {
-    if (typeof window === 'undefined') return { bookingId: null, amount: null }
-    
-    const searchParams = new URLSearchParams(window.location.search)
-    return {
-      bookingId: searchParams.get('booking_id'),
-      amount: searchParams.get('amount')
-    }
-  }
+  // Ensure component is mounted before accessing window
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
-    // Wait for client-side hydration
-    const timer = setTimeout(() => {
-      const { bookingId, amount } = getURLParams()
+    if (!mounted) return
 
-      if (!bookingId || !amount) {
+    // Client-side URL parameter parsing
+    const urlParams = new URLSearchParams(window.location.search)
+    const bookingId = urlParams.get('booking_id')
+    const amount = urlParams.get('amount')
+
+    if (!bookingId || !amount) {
+      toast({
+        title: "Invalid Payment Link",
+        description: "Missing booking information. Please start from the booking page.",
+        variant: "destructive",
+      })
+      setLoading(false)
+      return
+    }
+
+    // Fetch discount rate
+    const fetchDiscountRate = async () => {
+      try {
+        const response = await fetch('/api/settings/discount')
+        if (response.ok) {
+          const data = await response.json()
+          setDiscountRate(data.rate)
+          return data.rate
+        }
+        return 0
+      } catch (error) {
+        console.error('Error fetching discount rate:', error)
+        return 0
+      }
+    }
+
+    // Create payment intent with discount applied
+    const createPaymentIntent = async (discount: number) => {
+      try {
+        const originalAmount = parseFloat(amount)
+        const discountAmount = originalAmount * (discount / 100)
+        const finalAmount = originalAmount - discountAmount
+        
+        const response = await fetch('/api/create-payment-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: finalAmount,
+            booking_id: bookingId,
+          }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setClientSecret(data.clientSecret)
+        } else {
+          throw new Error('Failed to create payment intent')
+        }
+      } catch (error) {
+        console.error('Payment intent error:', error)
         toast({
-          title: "Invalid Payment Link",
-          description: "Missing booking information. Please start from the booking page.",
+          title: "Payment Setup Failed",
+          description: "Unable to setup payment. Please try again.",
           variant: "destructive",
         })
-        setLoading(false)
-        return
       }
+    }
 
-      // Fetch discount rate
-      const fetchDiscountRate = async () => {
-        try {
-          const response = await fetch('/api/settings/discount')
-          if (response.ok) {
-            const data = await response.json()
-            setDiscountRate(data.rate)
-            return data.rate
-          }
-          return 0
-        } catch (error) {
-          console.error('Error fetching discount rate:', error)
-          return 0
-        }
-      }
-
-      // Create payment intent with discount applied
-      const createPaymentIntent = async (discount: number) => {
-        try {
-          const originalAmount = parseFloat(amount)
-          const discountAmount = originalAmount * (discount / 100)
-          const finalAmount = originalAmount - discountAmount
-          
-          const response = await fetch('/api/create-payment-intent', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              amount: finalAmount,
-              booking_id: bookingId,
+    // Fetch booking details
+    const fetchBookingDetails = async () => {
+      try {
+        const response = await fetch(`/api/bookings/${bookingId}`)
+        if (response.ok) {
+          const booking = await response.json()
+          setBookingDetails({
+            id: booking.id,
+            customerName: booking.customerName || 'Guest',
+            serviceName: booking.serviceName || 'Nail Service',
+            staffName: booking.staffName || 'ConnieNail Staff',
+            date: new Date(booking.booking_start).toLocaleDateString(),
+            time: new Date(booking.booking_start).toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
             }),
-          })
-
-          if (response.ok) {
-            const data = await response.json()
-            setClientSecret(data.clientSecret)
-          } else {
-            throw new Error('Failed to create payment intent')
-          }
-        } catch (error) {
-          console.error('Payment intent error:', error)
-          toast({
-            title: "Payment Setup Failed",
-            description: "Unable to setup payment. Please try again.",
-            variant: "destructive",
+            price: parseFloat(amount),
+            duration: booking.duration || 60
           })
         }
+      } catch (error) {
+        console.error('Booking details error:', error)
       }
+    }
 
-      // Fetch booking details
-      const fetchBookingDetails = async () => {
-        try {
-          const response = await fetch(`/api/bookings/${bookingId}`)
-          if (response.ok) {
-            const booking = await response.json()
-            setBookingDetails({
-              id: booking.id,
-              customerName: booking.customerName || 'Guest',
-              serviceName: booking.serviceName || 'Nail Service',
-              staffName: booking.staffName || 'ConnieNail Staff',
-              date: new Date(booking.booking_start).toLocaleDateString(),
-              time: new Date(booking.booking_start).toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              }),
-              price: parseFloat(amount),
-              duration: booking.duration || 60
-            })
-          }
-        } catch (error) {
-          console.error('Booking details error:', error)
-        }
-      }
+    // Fetch discount rate first, then create payment intent with discount applied
+    fetchDiscountRate().then((discount) => {
+      Promise.all([createPaymentIntent(discount), fetchBookingDetails()])
+        .finally(() => setLoading(false))
+    })
+  }, [mounted, toast])
 
-      // Fetch discount rate first, then create payment intent with discount applied
-      fetchDiscountRate().then((discount) => {
-        Promise.all([createPaymentIntent(discount), fetchBookingDetails()])
-          .finally(() => setLoading(false))
-      })
-    }, 100) // Small delay to ensure client-side hydration
-
-    return () => clearTimeout(timer)
-  }, [toast])
-
-  if (loading) {
+  // Show loading until mounted
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -390,11 +392,4 @@ function PaymentPageContent() {
       </div>
     </div>
   )
-}
-
-// Force dynamic rendering to avoid static generation issues
-export const dynamic = 'force-dynamic'
-
-export default function PaymentPage() {
-  return <PaymentPageContent />
 }
