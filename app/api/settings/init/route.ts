@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
+  // CRITICAL: Always return safe response during build time
+  const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV && !process.env.RUNTIME_ENV
+  
+  if (isBuildTime) {
+    return NextResponse.json({
+      success: true,
+      message: 'Settings initialization ready - build mode',
+      buildMode: true
+    })
+  }
+
   try {
-    // Dynamic imports to avoid build issues
+    // Runtime-only database access
     const { db } = await import('@/server/db')
     const { settings } = await import('@/shared/schema')
     const { eq } = await import('drizzle-orm')
@@ -167,8 +178,20 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  // CRITICAL: Always return safe response during build time
+  const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV && !process.env.RUNTIME_ENV
+  
+  if (isBuildTime) {
+    return NextResponse.json({
+      success: true,
+      message: 'Settings service ready - build mode',
+      buildMode: true,
+      settings: {}
+    })
+  }
+
   try {
-    // Dynamic imports to avoid build issues
+    // Runtime-only database access
     const { db } = await import('@/server/db')
     const { settings } = await import('@/shared/schema')
 
