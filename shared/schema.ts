@@ -355,3 +355,24 @@ export const insertTreatmentSchema = createInsertSchema(treatments);
 export const insertBookingDetailSchema = createInsertSchema(bookingDetails);
 export const insertTreatmentDetailSchema = createInsertSchema(treatmentDetails);
 export const insertCustomerInquirySchema = createInsertSchema(customerInquiries);
+
+// Settings table for system configuration
+export const settings = pgTable("settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  value: text("value"),
+  description: text("description"),
+  category: varchar("category", { length: 50 }).default('general'),
+  isEncrypted: boolean("is_encrypted").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertSettingSchema = createInsertSchema(settings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSetting = typeof insertSettingSchema._input;
+export type SelectSetting = typeof settings.$inferSelect;

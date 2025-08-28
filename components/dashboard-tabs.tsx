@@ -12,6 +12,7 @@ import { AdminBookingInterface } from '@/components/admin-booking-interface-new'
 import { AdminDashboardOverview } from '@/components/admin-dashboard-overview'
 import { AdminPaymentAnalytics } from '@/components/admin-payment-analytics'
 import { StaffDashboard } from '@/components/staff-dashboard'
+import TwilioSettings from './twilio-settings'
 import { CustomerInquiries } from '@/components/customer-inquiries'
 import { NewsManager } from '@/components/news-manager'
 import { AdminManagement } from '@/components/admin-management'
@@ -565,7 +566,10 @@ export function DashboardTabs({ currentUser }: DashboardTabsProps) {
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
-          <AdminSettingsEnhanced currentUser={currentUser} />
+          <div className="grid gap-6">
+            <AdminSettingsEnhanced currentUser={currentUser} />
+            <TwilioSettings />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

@@ -1,17 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
-import twilio from 'twilio'
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if Twilio is configured
-    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
+    // Get Twilio settings from database
+    const settingsResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:5000'}/api/settings/twilio`)
+    
+    if (!settingsResponse.ok) {
       return NextResponse.json(
-        { error: 'SMS service not configured. Please contact administrator.' },
+        { error: 'SMS service not configured. Please configure Twilio settings in admin panel.' },
         { status: 503 }
       )
     }
 
-    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+    const twilioSettings = await settingsResponse.json()
+    
+    if (!twilioSettings.account_sid || !twilioSettings.auth_token || !twilioSettings.phone_number) {
+      return NextResponse.json(
+        { error: 'SMS service not configured. Please configure Twilio settings in admin panel.' },
+        { status: 503 }
+      )
+    }
+
+    // Dynamically import and initialize Twilio only when needed
+    const twilio = (await import('twilio')).default
+    const client = twilio(twilioSettings.account_sid, twilioSettings.auth_token)
     const { to, message, customerName } = await request.json()
 
     if (!to || !message) {
@@ -32,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if from and to numbers are the same
-    const fromPhone = process.env.TWILIO_PHONE_NUMBER
+    const fromPhone = twilioSettings.phone_number
     
     if (formattedPhone === fromPhone) {
       return NextResponse.json(
@@ -59,7 +71,7 @@ ConnieNail Team
 
     const result = await client.messages.create({
       body: smsMessage,
-      from: process.env.TWILIO_PHONE_NUMBER,
+      from: twilioSettings.phone_number,
       to: formattedPhone
     })
 
