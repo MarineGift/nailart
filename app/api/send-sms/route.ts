@@ -2,33 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
-    // Skip during build time
-    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    // Skip only during actual build process (not development)
+    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL && !process.env.VERCEL_ENV) {
       return NextResponse.json(
         { error: 'SMS service not available during build' },
         { status: 503 }
       )
     }
 
-    // Get Twilio settings from database
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5000'
-    
-    const settingsResponse = await fetch(`${baseUrl}/api/settings/twilio`)
-    
-    if (!settingsResponse.ok) {
-      return NextResponse.json(
-        { error: 'SMS service not configured. Please configure Twilio settings in admin panel.' },
-        { status: 503 }
-      )
+    // Use provided Twilio credentials for testing
+    const twilioSettings = {
+      account_sid: 'ACa24a87159bf2e5d77376bb0da09b5218',
+      auth_token: 'e95bad8ab333f397b3a810b7e6799833',
+      phone_number: '+18885493238'
     }
-
-    const twilioSettings = await settingsResponse.json()
     
     if (!twilioSettings.account_sid || !twilioSettings.auth_token || !twilioSettings.phone_number) {
       return NextResponse.json(
-        { error: 'SMS service not configured. Please configure Twilio settings in admin panel.' },
+        { error: 'SMS service not configured.' },
         { status: 503 }
       )
     }

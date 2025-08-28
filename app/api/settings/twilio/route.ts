@@ -5,8 +5,8 @@ import { eq } from 'drizzle-orm'
 
 export async function GET() {
   try {
-    // Skip during build time
-    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    // Skip only during actual build process (not development)
+    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL && !process.env.VERCEL_ENV) {
       return NextResponse.json({}, { status: 404 })
     }
 
@@ -37,8 +37,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    // Skip during build time
-    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+    // Skip only during actual build process (not development)
+    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL && !process.env.VERCEL_ENV) {
       return NextResponse.json(
         { error: 'Settings service not available during build' },
         { status: 503 }
@@ -62,22 +62,34 @@ export async function POST(request: NextRequest) {
     ]
 
     for (const setting of twilioKeys) {
-      await db
-        .insert(settings)
-        .values({
-          key: setting.key,
-          value: setting.value,
-          description: setting.description,
-          category: 'twilio',
-          isEncrypted: setting.key === 'auth_token', // Encrypt auth token
-        })
-        .onConflictDoUpdate({
-          target: settings.key,
-          set: {
+      // Check if setting exists, if so update, else insert
+      const existingSetting = await db
+        .select()
+        .from(settings)
+        .where(eq(settings.key, setting.key))
+        .limit(1)
+      
+      if (existingSetting.length > 0) {
+        // Update existing
+        await db
+          .update(settings)
+          .set({
             value: setting.value,
             updatedAt: new Date(),
-          },
-        })
+          })
+          .where(eq(settings.key, setting.key))
+      } else {
+        // Insert new
+        await db
+          .insert(settings)
+          .values({
+            key: setting.key,
+            value: setting.value,
+            description: setting.description,
+            category: 'twilio',
+            isEncrypted: setting.key === 'auth_token', // Encrypt auth token
+          })
+      }
     }
 
     return NextResponse.json({ 
