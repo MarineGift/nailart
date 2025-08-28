@@ -93,26 +93,18 @@ function PaymentForm({ bookingDetails, discountRate }: { bookingDetails: Booking
   )
 }
 
-function SearchParamsHandler({ onParamsLoad }: { onParamsLoad: (bookingId: string | null, amount: string | null) => void }) {
-  const searchParams = useSearchParams()
-
-  useEffect(() => {
-    const bookingId = searchParams.get('booking_id')
-    const amount = searchParams.get('amount')
-    onParamsLoad(bookingId, amount)
-  }, [searchParams, onParamsLoad])
-
-  return null
-}
-
 function PaymentPageContent() {
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const [clientSecret, setClientSecret] = useState<string>('')
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [discountRate, setDiscountRate] = useState(0)
 
-  const handleParamsLoad = (bookingId: string | null, amount: string | null) => {
+  useEffect(() => {
+    const bookingId = searchParams.get('booking_id')
+    const amount = searchParams.get('amount')
+
     if (!bookingId || !amount) {
       toast({
         title: "Invalid Payment Link",
@@ -203,7 +195,7 @@ function PaymentPageContent() {
       Promise.all([createPaymentIntent(discount), fetchBookingDetails()])
         .finally(() => setLoading(false))
     })
-  }
+  }, [searchParams, toast])
 
   if (loading) {
     return (
@@ -237,9 +229,6 @@ function PaymentPageContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 py-12">
-      <Suspense fallback={null}>
-        <SearchParamsHandler onParamsLoad={handleParamsLoad} />
-      </Suspense>
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
@@ -389,6 +378,9 @@ function PaymentPageContent() {
     </div>
   )
 }
+
+// Force dynamic rendering to avoid static generation issues
+export const dynamic = 'force-dynamic'
 
 export default function PaymentPage() {
   return (
