@@ -2,8 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
+    // Skip execution during build time
+    if (process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { error: 'SMS service not available during build' },
+        { status: 503 }
+      )
+    }
+
     // Get Twilio settings from database
-    const settingsResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:5000'}/api/settings/twilio`)
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'http://localhost:5000'
+    
+    const settingsResponse = await fetch(`${baseUrl}/api/settings/twilio`)
     
     if (!settingsResponse.ok) {
       return NextResponse.json(
