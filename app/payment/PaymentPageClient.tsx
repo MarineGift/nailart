@@ -100,44 +100,28 @@ export default function PaymentPageClient() {
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [discountRate, setDiscountRate] = useState(0)
-  const [mounted, setMounted] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
-  // Only run on client side
+  // Ensure we're on client side before doing anything
   useEffect(() => {
-    setMounted(true)
+    setIsClient(true)
   }, [])
 
   useEffect(() => {
-    if (!mounted) return
+    if (!isClient) return
 
-    // Extract URL parameters manually without Next.js hooks
-    let bookingId = ''
-    let amount = ''
-    
-    try {
-      if (typeof window !== 'undefined' && window.location) {
-        const search = window.location.search
-        if (search) {
-          // Manual parameter parsing to avoid any Next.js internals
-          const params = search.slice(1).split('&')
-          for (let i = 0; i < params.length; i++) {
-            const param = params[i]
-            const eq = param.indexOf('=')
-            if (eq > 0) {
-              const key = param.slice(0, eq)
-              const value = param.slice(eq + 1)
-              if (key === 'booking_id') {
-                bookingId = decodeURIComponent(value)
-              } else if (key === 'amount') {
-                amount = decodeURIComponent(value)
-              }
-            }
-          }
-        }
+    // Get URL parameters using standard Web API - NO Next.js hooks
+    const getUrlParams = () => {
+      if (typeof window === 'undefined') return { bookingId: '', amount: '' }
+      
+      const url = new URL(window.location.href)
+      return {
+        bookingId: url.searchParams.get('booking_id') || '',
+        amount: url.searchParams.get('amount') || ''
       }
-    } catch (e) {
-      console.error('URL parsing error:', e)
     }
+
+    const { bookingId, amount } = getUrlParams()
 
     if (!bookingId || !amount) {
       toast({
@@ -219,9 +203,10 @@ export default function PaymentPageClient() {
     }
 
     setupPayment()
-  }, [mounted, toast])
+  }, [isClient, toast])
 
-  if (!mounted || loading) {
+  // Show loading until client-side mount
+  if (!isClient || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
