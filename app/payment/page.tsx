@@ -18,8 +18,9 @@ import {
   AlertCircle 
 } from 'lucide-react'
 
-// Force dynamic rendering to prevent static generation
+// Prevent static generation completely
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')
@@ -41,7 +42,9 @@ function PaymentForm({ bookingDetails, discountRate }: { bookingDetails: Booking
   const { toast } = useToast()
   const [processing, setProcessing] = useState(false)
   
-  const originalAmount = bookingDetails?.price || 0
+  if (!bookingDetails) return null
+  
+  const originalAmount = bookingDetails.price
   const discountAmount = originalAmount * (discountRate / 100)
   const finalAmount = originalAmount - discountAmount
 
@@ -95,71 +98,30 @@ function PaymentForm({ bookingDetails, discountRate }: { bookingDetails: Booking
   )
 }
 
-function LoadingSpinner() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4" />
-        <p className="text-gray-600">Setting up your payment...</p>
-      </div>
-    </div>
-  )
-}
-
-function ErrorDisplay() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
-      <Card className="max-w-md mx-auto">
-        <CardContent className="p-6 text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold mb-2">Payment Setup Failed</h2>
-          <p className="text-gray-600 mb-4">
-            Unable to setup payment for this booking. Please try again or contact us for assistance.
-          </p>
-          <Button onClick={() => window.history.back()}>
-            Go Back
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-
 export default function PaymentPage() {
   const { toast } = useToast()
   const [clientSecret, setClientSecret] = useState<string>('')
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [discountRate, setDiscountRate] = useState(0)
-  const [mounted, setMounted] = useState(false)
-  const [error, setError] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
-  // Ensure component is mounted before accessing window
+  // Only run on client side
   useEffect(() => {
-    setMounted(true)
+    setIsClient(true)
   }, [])
 
   useEffect(() => {
-    if (!mounted) return
+    if (!isClient) return
 
-    // Simple URL parameter extraction without Next.js hooks
-    let bookingId: string | null = null
-    let amount: string | null = null
-
-    try {
-      if (typeof window !== 'undefined' && window.location.search) {
-        const params = window.location.search.substring(1).split('&')
-        for (const param of params) {
-          const [key, value] = param.split('=')
-          if (key === 'booking_id') {
-            bookingId = decodeURIComponent(value)
-          } else if (key === 'amount') {
-            amount = decodeURIComponent(value)
-          }
-        }
-      }
-    } catch (e) {
-      console.error('Error parsing URL params:', e)
+    // Extract URL parameters manually
+    let bookingId = ''
+    let amount = ''
+    
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+      bookingId = url.searchParams.get('booking_id') || ''
+      amount = url.searchParams.get('amount') || ''
     }
 
     if (!bookingId || !amount) {
@@ -168,55 +130,49 @@ export default function PaymentPage() {
         description: "Missing booking information. Please start from the booking page.",
         variant: "destructive",
       })
-      setError(true)
       setLoading(false)
       return
     }
 
-    const initializePayment = async () => {
+    const setupPayment = async () => {
       try {
-        // Fetch discount rate
+        // Get discount rate
         let discount = 0
         try {
-          const discountResponse = await fetch('/api/settings/discount')
-          if (discountResponse.ok) {
-            const discountData = await discountResponse.json()
+          const discountRes = await fetch('/api/settings/discount')
+          if (discountRes.ok) {
+            const discountData = await discountRes.json()
             discount = discountData.rate || 0
             setDiscountRate(discount)
           }
         } catch (e) {
-          console.error('Error fetching discount:', e)
+          console.error('Discount fetch error:', e)
         }
 
-        // Calculate final amount with discount
+        // Calculate final amount
         const originalAmount = parseFloat(amount)
-        const discountAmount = originalAmount * (discount / 100)
-        const finalAmount = originalAmount - discountAmount
+        const finalAmount = originalAmount - (originalAmount * discount / 100)
         
         // Create payment intent
-        const paymentResponse = await fetch('/api/create-payment-intent', {
+        const paymentRes = await fetch('/api/create-payment-intent', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             amount: finalAmount,
             booking_id: bookingId,
           }),
         })
 
-        if (paymentResponse.ok) {
-          const paymentData = await paymentResponse.json()
+        if (paymentRes.ok) {
+          const paymentData = await paymentRes.json()
           setClientSecret(paymentData.clientSecret)
-        } else {
-          throw new Error('Failed to create payment intent')
         }
 
-        // Fetch booking details
+        // Get booking details
         try {
-          const bookingResponse = await fetch(`/api/bookings/${bookingId}`)
-          if (bookingResponse.ok) {
-            const booking = await bookingResponse.json()
+          const bookingRes = await fetch(`/api/bookings/${bookingId}`)
+          if (bookingRes.ok) {
+            const booking = await bookingRes.json()
             setBookingDetails({
               id: booking.id,
               customerName: booking.customerName || 'Guest',
@@ -232,32 +188,52 @@ export default function PaymentPage() {
             })
           }
         } catch (e) {
-          console.error('Error fetching booking details:', e)
+          console.error('Booking fetch error:', e)
         }
 
         setLoading(false)
       } catch (error) {
-        console.error('Payment initialization error:', error)
+        console.error('Payment setup error:', error)
         toast({
           title: "Payment Setup Failed",
           description: "Unable to setup payment. Please try again.",
           variant: "destructive",
         })
-        setError(true)
         setLoading(false)
       }
     }
 
-    initializePayment()
-  }, [mounted, toast])
+    setupPayment()
+  }, [isClient, toast])
 
-  // Show loading until mounted
-  if (!mounted || loading) {
-    return <LoadingSpinner />
+  if (!isClient || loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-gray-600">Setting up your payment...</p>
+        </div>
+      </div>
+    )
   }
 
-  if (error || !clientSecret || !bookingDetails) {
-    return <ErrorDisplay />
+  if (!clientSecret || !bookingDetails) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold mb-2">Payment Setup Failed</h2>
+            <p className="text-gray-600 mb-4">
+              Unable to setup payment for this booking. Please try again or contact us for assistance.
+            </p>
+            <Button onClick={() => window.history.back()}>
+              Go Back
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
