@@ -2,7 +2,8 @@
 import { Suspense } from "react";
 import PaymentClient from "./payment-client";
 
-export const dynamic = "force-dynamic"; // SSG/ISR 제외
+// SSG/ISR를 강제로 끄고 동적 렌더링
+export const dynamic = "force-dynamic";
 
 export default function PaymentPage() {
   return (
